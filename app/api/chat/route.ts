@@ -21,8 +21,8 @@ export async function POST(req: Request) {
         Person A: What is two plus two?
   
         Person B: Two plus two equals four.
-      `
-    }
+      `,
+    },
   ];
   const finalMessages = [...newMessage, ...messages]; // Concatenate arrays correctly
 
