@@ -50,7 +50,7 @@ export default function Chat() {
   var currentText = useRef("");
   var currentCount = useRef(0);
   var lastMsg = useRef("");
-  var checkpoint = useRef(10);
+  var checkpoint = useRef(20);
 
   const {
     error,
