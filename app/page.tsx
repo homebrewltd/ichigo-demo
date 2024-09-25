@@ -47,6 +47,11 @@ export default function Chat() {
   const [frequency, setFrequency] = useState<number>(20);
   const [isChatVisible, setIsChatVisible] = useState(false);
 
+  var currentText = useRef("");
+  var currentCount = useRef(0);
+  var lastMsg = useRef("");
+  var checkpoint = useRef(10);
+
   const {
     error,
     input,
