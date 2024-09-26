@@ -63,6 +63,8 @@ export default function Chat() {
     "linear-gradient(135deg, #FFC300, #FF5733)",
   ];
 
+  const [frequency, setFrequency] = useState<number>(20);
+
   const {
     error,
     input,
@@ -355,6 +357,8 @@ export default function Chat() {
     }
   };
 
+  console.log(frequency);
+
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Reset messages
@@ -380,11 +384,6 @@ export default function Chat() {
   const displayInput = input.includes("<|sound_start|>")
     ? "🔊 🔊 Audio 🔊 🔊 "
     : input;
-
-  const handleToggle = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent any default action (e.g., form submission, page reload)
-    setIsRecording(!isRecording);
-  };
 
   return (
     <>
