@@ -51,6 +51,17 @@ export default function Chat() {
   var currentCount = useRef(0);
   var lastMsg = useRef("");
   var checkpoint = useRef(10);
+  let audioContext: AudioContext;
+  let animationFrameId: number;
+
+  const defaultColors = [
+    "linear-gradient(135deg, #FF5733, #FFC300)",
+    "linear-gradient(135deg, #33FF57, #33FFB8)",
+    "linear-gradient(135deg, #3357FF, #3B9FFF)",
+    "linear-gradient(135deg, #3357FF, #3B9FFF)",
+    "linear-gradient(135deg, #FF33A1, #FF5B93)",
+    "linear-gradient(135deg, #FFC300, #FF5733)",
+  ];
 
   const {
     error,
