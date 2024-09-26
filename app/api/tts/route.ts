@@ -19,7 +19,11 @@ export async function POST(req: NextRequest) {
         latency: "balanced",
         max_new_tokens: 2048,
         chunk_length: 200,
+<<<<<<< HEAD
         repetition_penalty: 1.5,
+=======
+        repetition_penalty: 1.5
+>>>>>>> 8457324 (update logic stop)
       }),
     });
 
