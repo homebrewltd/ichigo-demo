@@ -248,6 +248,40 @@ export default function Chat() {
     let dataArray: Uint8Array;
 
     try {
+      const canvas = canvasRef.current;
+
+      const ctx = canvas!.getContext("2d");
+
+      canvas!.width = 200;
+      canvas!.height = 200;
+
+      const drawOrbs = () => {
+        analyser!.getByteFrequencyData(dataArray);
+
+        // Clear canvas for each new frame
+        ctx!.clearRect(0, 0, canvas!.width, canvas!.height);
+
+        // Orb properties
+        const orbCount = 10;
+        const maxOrbSize = 100;
+
+        for (let i = 0; i < orbCount; i++) {
+          const radius = (dataArray[i] / 255) * maxOrbSize;
+          const x =
+            (canvas!.width / orbCount) * i + canvas!.width / (2 * orbCount);
+          const y = canvas!.height / 2;
+
+          ctx!.beginPath();
+          ctx!.arc(x, y, radius, 0, 2 * Math.PI, false);
+          ctx!.fillStyle = `rgba(99, 102, 241, 0.6)`; // Tailwind 'indigo-500'
+          ctx!.fill();
+        }
+
+        requestAnimationFrame(drawOrbs);
+      };
+
+      drawOrbs();
+
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorderRef.current = new MediaRecorder(stream);
       audioChunksRef.current = [];
@@ -339,6 +373,26 @@ export default function Chat() {
         animationFrameId = requestAnimationFrame(animateWave);
       };
 
+      const animateOrb = () => {
+        if (ctx) {
+          ctx.clearRect(0, 0, canvas!.width, canvas!.height);
+          ctx.beginPath();
+          ctx.arc(
+            canvas!.width / 2,
+            canvas!.height / 2,
+            100 + dataArray[0] / 2,
+            0,
+            2 * Math.PI
+          );
+          ctx.fillStyle = `rgba(255, 255, 255, 0.1)`;
+          ctx.fill();
+        }
+
+        console.log("animate");
+        requestAnimationFrame(animateOrb);
+      };
+
+      animateOrb();
       animateWave();
 
       mediaRecorderRef.current.start();
