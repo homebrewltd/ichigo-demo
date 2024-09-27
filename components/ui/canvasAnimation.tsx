@@ -5,7 +5,6 @@ interface CanvasAnimationProps {
 }
 
 const CanvasAnimation: React.FC<CanvasAnimationProps> = ({ frequency }) => {
-  console.log(frequency); // this like 84.0625, 92.3125, so increased by sound
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   let max = 80;
   let count = 150;
@@ -56,24 +55,20 @@ const CanvasAnimation: React.FC<CanvasAnimationProps> = ({ frequency }) => {
           let z1 = y * yp2 - z * yp;
           let x1 = x * xp + z1 * xp2;
           z = x * xp2 - z1 * xp;
-          z1 = Math.pow(2, z * s - frequency / 10);
+          z1 = Math.pow(2, z * s);
           x = x1 * z1;
           y = y1 * z1;
           p2.push([x, y, z]);
         }
 
         s *= 120;
-
-        // Adjust line width and color based on frequency
-        const lineWidth = Math.min(10, Math.max(1, frequency / 10)); // Line width based on frequency
-
         for (let d = 0; d < 3; d++) {
           for (let a = 0; a < max; a++) {
             const b = p2[d * max + a];
             const c = p2[((a + 1) % max) + d * max];
             ctx.beginPath();
             ctx.strokeStyle = `hsla(${((a / max) * 360) | 0}, 70%, 60%, 0.15)`;
-            ctx.lineWidth = lineWidth;
+            ctx.lineWidth = Math.pow(6, b[2]);
             ctx.lineTo(b[0] * s + 200, b[1] * s + 200);
             ctx.lineTo(c[0] * s + 200, c[1] * s + 200);
             ctx.stroke();
@@ -85,7 +80,7 @@ const CanvasAnimation: React.FC<CanvasAnimationProps> = ({ frequency }) => {
     };
 
     rus();
-  }, [frequency]);
+  }, []);
 
   return <canvas ref={canvasRef} />;
 };
