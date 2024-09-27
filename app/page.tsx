@@ -429,7 +429,7 @@ export default function Chat() {
             </div>
             {/* Left Panel Content */}
             <div className="flex justify-center  h-full p-2 border-y border-neutral-200 bg-white relative">
-              {/* <CanvasAnimation frequency={frequency} /> */};
+              {/* <CanvasAnimation frequency={frequency} /> */}
               {/* <Vertex frequency={frequency} /> */}
               {/* <div className="absolute w-80 h-80 bg-black/20 rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 blur-3xl"></div> */}
               <BlobAnimation frequency={frequency} />
