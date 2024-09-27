@@ -357,8 +357,6 @@ export default function Chat() {
     }
   };
 
-  console.log(frequency);
-
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Reset messages
