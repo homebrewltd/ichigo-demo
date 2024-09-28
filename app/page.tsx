@@ -1,7 +1,7 @@
 "use client";
 
 import * as THREE from "three";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import BlobAnimation from "@/components/animations/blobAnimation";
 import Navbar from "@/components/ui/navbar";
 import { IoChatbubbleEllipsesSharp } from "react-icons/io5";
@@ -10,6 +10,12 @@ import { twMerge } from "tailwind-merge";
 import { Input } from "@/components/ui/input";
 import { useGlobalAudioPlayer } from "react-use-audio-player";
 import { useChat } from "@ai-sdk/react";
+import { useWindowEvent } from "@/hooks/useWindowEvent";
+import { useOs } from "@/hooks/useOs";
+import WavEncoder from "wav-encoder";
+import { formatTime } from "@/lib/utils";
+import { setTimeout } from "timers";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const MainView = () => {
   const [isChatVisible, setIsChatVisible] = useState(false);
@@ -76,13 +82,33 @@ const MainView = () => {
     keepLastMessageOnError: true,
     onFinish(message) {
       handleTTS(message.id, currentText.current);
-      console.log("send: ", currentText.current);
+      console.debug("send: ", currentText.current);
     },
   });
 
   const isInputVoice = input.startsWith("<|sound_start|>");
-  const displayInput = isInputVoice ? "🔊 🔊  🔊 " : input;
+  const maskingValueInput = isInputVoice ? "🔊 🔊 🔊 " : input;
+  const radius = 16; // Circle radius
+  const circumference = 2 * Math.PI * radius; // Circumference of the circle
+  const dashOffset = circumference - (time / (maxTime - 1)) * circumference;
 
+  // Update the timer every second while recording
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isRecording) {
+      if (time < maxTime) {
+        interval = setInterval(() => {
+          setTime((prev) => prev + 1);
+        }, 1000);
+      } else {
+        setIsRecording(false); // Automatically stop recording when max time is reached
+      }
+    }
+
+    return () => clearInterval(interval);
+  }, [isRecording, time]);
+
+  // Send chat message
   useEffect(() => {
     const lastMessage = messages[messages.length - 1];
 
@@ -114,11 +140,11 @@ const MainView = () => {
       "/",
       "\\",
     ];
-    // console.log("send first: ", newWord, punctuation.includes(newWord),currentCount.current , checkpoint.current);
+    // console.debug("send first: ", newWord, punctuation.includes(newWord),currentCount.current , checkpoint.current);
     if (currentCount.current < chunkSize) {
       currentText.current = currentText.current + newWord;
     } else if (currentCount.current < 60 && punctuation.includes(newWord)) {
-      console.log("send first: ", currentText.current);
+      console.debug("send first: ", currentText.current);
       handleTTS(lastMessage.id, currentText.current);
       checkpoint.current = 60;
       currentText.current = ""; // in case of punctuation, reset the text
@@ -127,7 +153,7 @@ const MainView = () => {
       // first chunk
       currentText.current = currentText.current + newWord;
     } else {
-      console.log("send: ", currentText.current);
+      console.debug("send: ", currentText.current);
       handleTTS(lastMessage.id, currentText.current);
       checkpoint.current = chunkSize === 60 ? 60 : 400;
       currentText.current = newWord;
@@ -145,15 +171,22 @@ const MainView = () => {
     checkpoint,
   ]);
 
+  // Send message when user stop record
   useEffect(() => {
-    if (isInputVoice) {
-      const preventDefault = {
-        preventDefault: () => {},
-      } as React.FormEvent;
+    const preventDefault = {
+      preventDefault: () => {},
+    } as React.FormEvent;
 
+    if (isInputVoice || time === maxTime) {
       handleFormSubmit(preventDefault);
     }
-  }, [isInputVoice]);
+    if (time === maxTime) {
+      stopRecording();
+    }
+  }, [isInputVoice, time]);
+
+  const os = useOs();
+  const isMac = os === "macos";
 
   // Make the input focus when the chat is open.
   useEffect(() => {
@@ -166,10 +199,53 @@ const MainView = () => {
     }
   }, [isChatVisible]);
 
+  // Hotkey toogle chatbox and record audio
+  useWindowEvent("keydown", (event) => {
+    const prefix = isMac ? event.metaKey : event.ctrlKey;
+    if (event.code === "KeyB" && prefix) {
+      setIsChatVisible(!isChatVisible);
+    }
+
+    if (event.code === "KeyD" && prefix && event.shiftKey) {
+      if (isRecording) {
+        stopRecording();
+      } else {
+        startRecording();
+      }
+    }
+  });
+
+  const handleScroll = useCallback((event: React.UIEvent<HTMLElement>) => {
+    const currentScrollTop = event.currentTarget.scrollTop;
+
+    if (prevScrollTop.current > currentScrollTop) {
+      isUserManuallyScrollingUp.current = true;
+    } else {
+      const currentScrollTop = event.currentTarget.scrollTop;
+      const scrollHeight = event.currentTarget.scrollHeight;
+      const clientHeight = event.currentTarget.clientHeight;
+
+      if (currentScrollTop + clientHeight >= scrollHeight) {
+        isUserManuallyScrollingUp.current = false;
+      }
+    }
+    prevScrollTop.current = currentScrollTop;
+  }, []);
+
+  useEffect(() => {
+    if (isUserManuallyScrollingUp.current === true || !listRef.current) return;
+    const scrollHeight = listRef.current?.scrollHeight ?? 0;
+    listRef.current?.scrollTo({
+      top: scrollHeight,
+      behavior: "instant",
+    });
+  }, [listRef.current?.scrollHeight, isUserManuallyScrollingUp]);
+
+  // Play squance audio
   const playAudio = () => {
     if (audioURL.current.length > 0 && audioURLIndex.current != -1) {
-      console.log("Playing: ", audioURLIndex.current);
-      console.log(audioURL.current[audioURLIndex.current], "Playing");
+      console.debug("Playing: ", audioURLIndex.current);
+      console.debug(audioURL.current[audioURLIndex.current], "Playing");
 
       const listener = new THREE.AudioListener();
       const audio = new THREE.Audio(listener);
@@ -178,16 +254,16 @@ const MainView = () => {
       const analyzeFrequency = () => {
         if (audioAnalyser.current) {
           const data = audioAnalyser.current.getFrequencyData();
-          console.log("Frequency Data:", data);
+          console.debug("Frequency Data:", data);
 
           // Check if data contains non-zero values
           if (data.some((value) => value > 0)) {
             const averageFrequency =
               data.reduce((sum, value) => sum + value, 0) / data.length;
-            console.log("Average Frequency:", averageFrequency);
+            console.debug("Average Frequency:", averageFrequency);
             setFrequency(averageFrequency);
           } else {
-            console.log(
+            console.debug(
               "Frequency data is all zeros, indicating silence or no audio."
             );
           }
@@ -209,7 +285,7 @@ const MainView = () => {
             (buffer) => {
               audio.setBuffer(buffer);
               audioAnalyser.current = new THREE.AudioAnalyser(audio, 32);
-              console.log(audioAnalyser.current, "audioAnalyser.current");
+              console.debug(audioAnalyser.current, "audioAnalyser.current");
 
               // Start playing the audio
               audio.play();
@@ -222,7 +298,7 @@ const MainView = () => {
           );
         },
         onend: () => {
-          console.log("OneEnd: ", audioURL.current.length, audioURLIndex);
+          console.debug("OneEnd: ", audioURL.current.length, audioURLIndex);
           if (audioURL.current.length > audioURLIndex.current + 1) {
             audioURLIndex.current = audioURLIndex.current + 1;
             playAudio();
@@ -235,6 +311,7 @@ const MainView = () => {
     }
   };
 
+  // Handle get TTS API
   const handleTTS = async (messageId: string, text: string) => {
     try {
       const response = await fetch("/api/tts", {
@@ -253,9 +330,9 @@ const MainView = () => {
       const audioBlob = await response.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
       audioURL.current.push(audioUrl);
-      console.log("Pushing: ", audioURL.current.length, audioUrl);
+      console.debug("Pushing: ", audioURL.current.length, audioUrl);
       if (audioURLIndex.current === -1) {
-        console.log("Set Audio Index: ", 0);
+        console.debug("Set Audio Index: ", 0);
         audioURLIndex.current = 0;
         playAudio();
       }
@@ -264,6 +341,7 @@ const MainView = () => {
     }
   };
 
+  // Handle submit
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Reset messages
@@ -274,6 +352,123 @@ const MainView = () => {
     audioURL.current = [];
     audioURLIndex.current = -1;
     handleSubmit(e);
+  };
+
+  // Start recording audio
+  const startRecording = async () => {
+    let analyser: AnalyserNode | null = null;
+    let dataArray: Uint8Array;
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorderRef.current = new MediaRecorder(stream);
+      audioChunksRef.current = [];
+      audioContext = new ((window as any).AudioContext ||
+        (window as any).webkitAudioContext)();
+      const source = audioContext!.createMediaStreamSource(stream);
+
+      analyser = audioContext!.createAnalyser();
+      analyser.fftSize = 1024;
+
+      source.connect(analyser);
+
+      const bufferLength = analyser.frequencyBinCount;
+      dataArray = new Uint8Array(bufferLength);
+
+      mediaRecorderRef.current.ondataavailable = (event) => {
+        audioChunksRef.current.push(event.data);
+      };
+
+      mediaRecorderRef.current.onstop = async () => {
+        console.debug(audioContext);
+        if (audioContext) {
+          audioContext.close();
+        }
+        cancelAnimationFrame(animationFrameId);
+        // waveBars.current.forEach((bar, i) => {
+        //   if (bar) {
+        //     bar.style.height = "10px"; // Reset to default height
+        //     bar.style.background = defaultColors[i]; // Reset color
+        //   }
+        // });
+
+        const audioBlob = new Blob(audioChunksRef.current, {
+          type: "audio/webm",
+        });
+        const arrayBuffer = await audioBlob.arrayBuffer();
+        const audioData = await audioContext.decodeAudioData(arrayBuffer);
+
+        const channelData = [];
+        for (let i = 0; i < audioData.numberOfChannels; i++) {
+          channelData.push(audioData.getChannelData(i));
+        }
+
+        const wavData = await WavEncoder.encode({
+          sampleRate: audioData.sampleRate,
+          channelData: channelData,
+        });
+
+        const wavBlob = new Blob([new Uint8Array(wavData)], {
+          type: "audio/wav",
+        });
+
+        // const audioUrl = URL.createObjectURL(wavBlob);
+        // setAudioURL(audioUrl);
+
+        const formData = new FormData();
+        formData.append("file", wavBlob, "audio.wav");
+
+        try {
+          const response = await fetch("/api/tokenize", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!response.ok) {
+            throw new Error("Failed to tokenize audio");
+          }
+
+          const data = await response.json();
+          setInput(`<|sound_start|>${data.tokens}`);
+        } catch (error) {
+          console.error("Error tokenizing audio:", error);
+        }
+      };
+
+      const animateWave = () => {
+        analyser!.getByteFrequencyData(dataArray);
+
+        // Adjust each bar height based on audio frequency data
+        // waveBars.current.forEach((bar, i) => {
+        //   const value = dataArray[i];
+        //   const barHeight = (value / 255) * 100; // Normalize to 100%
+        //   if (bar) {
+        //     bar.style.height = `${barHeight}px`;
+        //     // bar.style.background = `hsl(${(value / 255) * 30}, 100%, 50%)`; // Warm color change with HSL
+        //   }
+        // });
+
+        animationFrameId = requestAnimationFrame(animateWave);
+      };
+
+      animateWave();
+
+      mediaRecorderRef.current.start();
+      setIsRecording(true);
+    } catch (error) {
+      console.error("Error starting recording:", error);
+    }
+  };
+
+  // stop recording audio
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      setTimeout(() => {
+        setTime(0);
+      }, 500);
+    }
   };
 
   return (
@@ -289,7 +484,11 @@ const MainView = () => {
             isChatVisible && "visible opacity-1 right-0"
           )}
         >
-          <div className="h-full overflow-x-hidden mt-2 mb-4">
+          <div
+            className="h-full overflow-x-hidden mt-2 mb-4"
+            ref={listRef}
+            onScroll={handleScroll}
+          >
             <div
               className={twMerge(
                 "space-y-4 h-full p-4",
@@ -320,13 +519,12 @@ const MainView = () => {
                     <div
                       key={m.id}
                       className={twMerge(
-                        "px-3 py-2 rounded-lg max-w-[80%]",
-                        m.role === "user" ? "ml-auto border" : "border"
+                        "px-3 py-1.5 rounded-lg max-w-[80%] shadow-sm",
+                        m.role === "user"
+                          ? "bg-foreground text-background ml-auto border"
+                          : "border "
                       )}
                     >
-                      {/* <p className="font-semibold mb-1">
-                        {m.role === "user" ? "You:" : "Ichigo:"}
-                      </p> */}
                       <p className="whitespace-pre-wrap">{displayContent}</p>
                     </div>
                   );
@@ -342,7 +540,8 @@ const MainView = () => {
               />
               <Input
                 ref={inputRef}
-                value={displayInput}
+                value={maskingValueInput}
+                onClick={handleFormSubmit}
                 onChange={(e) => {
                   handleInputChange(e);
                   if (e.target.value.includes("<|sound_start|>")) {
@@ -351,26 +550,93 @@ const MainView = () => {
                 }}
                 type="text"
                 placeholder="Type a message..."
-                className="w-full h-12 p-4 border-0 border-t rounded-t-none focus-within:outline-none focus-visible:ring-0"
+                className="w-full h-12 p-4 border-0 border-t rounded-t-none focus-within:outline-none focus-visible:ring-0 cursor-pointer"
               />
             </div>
           </form>
         </div>
       </div>
-      <div className="flex flex-shrink-0 justify-center items-center h-32 relative w-full">
-        <div className="relative w-16 h-16 flex  justify-center items-center cursor-pointer">
-          <div className="absolute top-0 left-0 bg-transparent border-2 border-foreground w-full h-full rounded-full"></div>
-          <div className="w-10 h-10 rounded-full bg-foreground" />
+
+      <div className="flex flex-shrink-0 justify-center items-center h-48 relative w-full">
+        <div className="flex flex-col justify-center items-center gap-4">
+          <p className={twMerge("text-xs invisible", isRecording && "visible")}>
+            {formatTime(time)}
+          </p>
+          <div
+            className="relative w-16 h-16 flex  justify-center items-center cursor-pointer"
+            onClick={isRecording ? stopRecording : startRecording}
+          >
+            <svg
+              className="absolute top-0 left-0 w-full h-full"
+              viewBox="0 0 36 36"
+            >
+              {/* Static White Border */}
+              <circle
+                className="stroke-foreground/50"
+                strokeWidth="1.5"
+                fill="transparent"
+                r={radius}
+                cx="18"
+                cy="18"
+              />
+              {/* Animated Stroke */}
+              {isRecording && (
+                <circle
+                  className="stroke-red-500 -translate-y-1/2"
+                  strokeWidth="1.5"
+                  fill="transparent"
+                  r={radius}
+                  cx="18"
+                  cy="18"
+                  strokeDasharray={circumference}
+                  strokeDashoffset={dashOffset}
+                  style={{
+                    transition: "stroke-dashoffset 1s linear", // Animate stroke
+                    transform: "rotate(-90deg)", // Rotate to start from the top
+                    transformOrigin: "50% 50%", // Set the rotation center
+                  }}
+                />
+              )}
+            </svg>
+
+            <div
+              className={twMerge(
+                "w-9 h-9 rounded-full bg-foreground transition-all duration-300 ease-linear",
+                isRecording && "w-6 h-6 rounded-sm bg-red-500"
+              )}
+            />
+          </div>
+          <span className="hidden md:block text-xs">
+            {os === "undetermined" ? (
+              <Skeleton className="h-4 w-[80px]" />
+            ) : (
+              <>{isMac ? "⌘" : "Ctrl"} + Shift + D</>
+            )}
+          </span>
         </div>
 
         <div
           className={twMerge(
-            "absolute right-0 cursor-pointer transition-colors duration-500",
-            isChatVisible && "dark:text-blue-300 text-blue-700"
+            "absolute right-0 bottom-16 transition-colors duration-500"
           )}
-          onClick={() => setIsChatVisible(!isChatVisible)}
         >
-          <IoChatbubbleEllipsesSharp size={28} />
+          <div className="flex gap-4 items-center">
+            <span className="hidden md:block text-xs">
+              {os == "undetermined" ? (
+                <Skeleton className="h-4 w-[40px]" />
+              ) : (
+                <>{isMac ? "⌘" : "Ctrl"} + B</>
+              )}
+            </span>
+            <IoChatbubbleEllipsesSharp
+              size={28}
+              onClick={() => setIsChatVisible(!isChatVisible)}
+              className={twMerge(
+                "cursor-pointer",
+                isChatVisible && "dark:text-blue-300 text-blue-700 "
+              )}
+            />
+          </div>
         </div>
       </div>
     </main>
