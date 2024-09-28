@@ -1,21 +1,21 @@
 "use client";
+
 import * as THREE from "three";
-
-import React, { useState, useRef, useEffect, useCallback } from "react";
-import { useChat } from "ai/react";
-import WavEncoder from "wav-encoder";
-import { useGlobalAudioPlayer } from "react-use-audio-player";
-import { Button } from "@/components/ui/button";
+import React, { useEffect, useRef, useState } from "react";
+import BlobAnimation from "@/components/animations/blobAnimation";
+import Navbar from "@/components/ui/navbar";
+import { IoChatbubbleEllipsesSharp } from "react-icons/io5";
+import { IoSend } from "react-icons/io5";
 import { twMerge } from "tailwind-merge";
-import { MessageSquareText, Mic, SendHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import Logo from "@/components/ui/logo";
-import Vertex from "@/components/ui/vertex";
-import CanvasAnimation from "@/components/ui/canvasAnimation";
-import BlobAnimation from "@/components/ui/blobAnimation";
+import { useGlobalAudioPlayer } from "react-use-audio-player";
+import { useChat } from "@ai-sdk/react";
 
-export default function Chat() {
+const MainView = () => {
+  const [isChatVisible, setIsChatVisible] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
   const [isRecording, setIsRecording] = useState(false);
+  const [frequency, setFrequency] = useState<number>(20);
   const audioURL = useRef<string[]>([]);
   const audioURLIndex = useRef(-1);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -24,15 +24,11 @@ export default function Chat() {
   const [lastPlayedMessageId, setLastPlayedMessageId] = useState<string | null>(
     null
   );
-
   const audioAnalyser = useRef<THREE.AudioAnalyser | null>(null);
-
-  const waveBars = useRef<HTMLDivElement[]>([]);
-
-  var currentText = useRef("");
-  var currentCount = useRef(0);
-  var lastMsg = useRef("");
-  var checkpoint = useRef(10);
+  const currentText = useRef("");
+  const currentCount = useRef(0);
+  const lastMsg = useRef("");
+  const checkpoint = useRef(10);
   let audioContext: AudioContext;
   let animationFrameId: number;
 
@@ -85,6 +81,90 @@ export default function Chat() {
   });
 
   const isInputVoice = input.startsWith("<|sound_start|>");
+  const displayInput = isInputVoice ? "🔊 🔊  🔊 " : input;
+
+  useEffect(() => {
+    const lastMessage = messages[messages.length - 1];
+
+    if (!lastMessage || lastMessage.role !== "assistant") return;
+
+    const newWord = lastMsg.current
+      ? lastMessage?.content.replace(lastMsg.current, "")
+      : lastMessage?.content;
+
+    const chunkSize = checkpoint.current ?? 400;
+    const punctuation = [
+      ".",
+      ",",
+      "!",
+      "?",
+      ":",
+      ";",
+      '"',
+      "'",
+      "(",
+      ")",
+      "[",
+      "]",
+      "{",
+      "}",
+      "-",
+      "--",
+      "...",
+      "/",
+      "\\",
+    ];
+    // console.log("send first: ", newWord, punctuation.includes(newWord),currentCount.current , checkpoint.current);
+    if (currentCount.current < chunkSize) {
+      currentText.current = currentText.current + newWord;
+    } else if (currentCount.current < 60 && punctuation.includes(newWord)) {
+      console.log("send first: ", currentText.current);
+      handleTTS(lastMessage.id, currentText.current);
+      checkpoint.current = 60;
+      currentText.current = ""; // in case of punctuation, reset the text
+      currentCount.current = 0;
+    } else if (chunkSize === 10) {
+      // first chunk
+      currentText.current = currentText.current + newWord;
+    } else {
+      console.log("send: ", currentText.current);
+      handleTTS(lastMessage.id, currentText.current);
+      checkpoint.current = chunkSize === 60 ? 60 : 400;
+      currentText.current = newWord;
+      currentCount.current = 0;
+    }
+
+    currentCount.current += 1;
+    lastMsg.current = lastMessage?.content;
+  }, [
+    messages,
+    currentText,
+    currentCount,
+    lastMsg,
+    lastPlayedMessageId,
+    checkpoint,
+  ]);
+
+  useEffect(() => {
+    if (isInputVoice) {
+      const preventDefault = {
+        preventDefault: () => {},
+      } as React.FormEvent;
+
+      handleFormSubmit(preventDefault);
+    }
+  }, [isInputVoice]);
+
+  // Make the input focus when the chat is open.
+  useEffect(() => {
+    if (isChatVisible && inputRef.current) {
+      const timeoutId = setTimeout(() => {
+        inputRef.current?.focus();
+      }, 500); // A timeout is needed because the element is invisible due to its parent, and there is a transition duration.
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [isChatVisible]);
 
   const playAudio = () => {
     if (audioURL.current.length > 0 && audioURLIndex.current != -1) {
@@ -155,68 +235,6 @@ export default function Chat() {
     }
   };
 
-  useEffect(() => {
-    const lastMessage = messages[messages.length - 1];
-
-    if (!lastMessage || lastMessage.role !== "assistant") return;
-
-    const newWord = lastMsg.current
-      ? lastMessage?.content.replace(lastMsg.current, "")
-      : lastMessage?.content;
-
-    const chunkSize = checkpoint.current ?? 400;
-    const punctuation = [
-      ".",
-      ",",
-      "!",
-      "?",
-      ":",
-      ";",
-      '"',
-      "'",
-      "(",
-      ")",
-      "[",
-      "]",
-      "{",
-      "}",
-      "-",
-      "--",
-      "...",
-      "/",
-      "\\",
-    ];
-    // console.log("send first: ", newWord, punctuation.includes(newWord),currentCount.current , checkpoint.current);
-    if (currentCount.current < chunkSize) {
-      currentText.current = currentText.current + newWord;
-    } else if (currentCount.current < 60 && punctuation.includes(newWord)) {
-      console.log("send first: ", currentText.current);
-      handleTTS(lastMessage.id, currentText.current);
-      checkpoint.current = 60;
-      currentText.current = ""; // in case of punctuation, reset the text
-      currentCount.current = 0;
-    } else if (chunkSize === 10) {
-      // first chunk
-      currentText.current = currentText.current + newWord;
-    } else {
-      console.log("send: ", currentText.current);
-      handleTTS(lastMessage.id, currentText.current);
-      checkpoint.current = chunkSize === 60 ? 60 : 400;
-      currentText.current = newWord;
-      currentCount.current = 0;
-    }
-
-    currentCount.current += 1;
-    lastMsg.current = lastMessage?.content;
-  }, [
-    messages,
-    currentText,
-    currentCount,
-    lastMsg,
-    lastPlayedMessageId,
-    checkpoint,
-  ]);
-
   const handleTTS = async (messageId: string, text: string) => {
     try {
       const response = await fetch("/api/tts", {
@@ -246,118 +264,6 @@ export default function Chat() {
     }
   };
 
-  const startRecording = async () => {
-    let analyser: AnalyserNode | null = null;
-    let dataArray: Uint8Array;
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorderRef.current = new MediaRecorder(stream);
-      audioChunksRef.current = [];
-      audioContext = new ((window as any).AudioContext ||
-        (window as any).webkitAudioContext)();
-      const source = audioContext!.createMediaStreamSource(stream);
-
-      analyser = audioContext!.createAnalyser();
-      analyser.fftSize = 1024;
-
-      source.connect(analyser);
-
-      const bufferLength = analyser.frequencyBinCount;
-      dataArray = new Uint8Array(bufferLength);
-
-      mediaRecorderRef.current.ondataavailable = (event) => {
-        audioChunksRef.current.push(event.data);
-      };
-
-      mediaRecorderRef.current.onstop = async () => {
-        console.log(audioContext);
-        if (audioContext) {
-          audioContext.close();
-        }
-        cancelAnimationFrame(animationFrameId);
-        waveBars.current.forEach((bar, i) => {
-          if (bar) {
-            bar.style.height = "10px"; // Reset to default height
-            bar.style.background = defaultColors[i]; // Reset color
-          }
-        });
-
-        const audioBlob = new Blob(audioChunksRef.current, {
-          type: "audio/webm",
-        });
-        const arrayBuffer = await audioBlob.arrayBuffer();
-        const audioData = await audioContext.decodeAudioData(arrayBuffer);
-
-        const channelData = [];
-        for (let i = 0; i < audioData.numberOfChannels; i++) {
-          channelData.push(audioData.getChannelData(i));
-        }
-
-        const wavData = await WavEncoder.encode({
-          sampleRate: audioData.sampleRate,
-          channelData: channelData,
-        });
-
-        const wavBlob = new Blob([new Uint8Array(wavData)], {
-          type: "audio/wav",
-        });
-
-        // const audioUrl = URL.createObjectURL(wavBlob);
-        // setAudioURL(audioUrl);
-
-        const formData = new FormData();
-        formData.append("file", wavBlob, "audio.wav");
-
-        try {
-          const response = await fetch("/api/tokenize", {
-            method: "POST",
-            body: formData,
-          });
-
-          if (!response.ok) {
-            throw new Error("Failed to tokenize audio");
-          }
-
-          const data = await response.json();
-          setInput(`<|sound_start|>${data.tokens}`);
-        } catch (error) {
-          console.error("Error tokenizing audio:", error);
-        }
-      };
-
-      const animateWave = () => {
-        analyser!.getByteFrequencyData(dataArray);
-
-        // Adjust each bar height based on audio frequency data
-        waveBars.current.forEach((bar, i) => {
-          const value = dataArray[i];
-          const barHeight = (value / 255) * 100; // Normalize to 100%
-          if (bar) {
-            bar.style.height = `${barHeight}px`;
-            // bar.style.background = `hsl(${(value / 255) * 30}, 100%, 50%)`; // Warm color change with HSL
-          }
-        });
-
-        animationFrameId = requestAnimationFrame(animateWave);
-      };
-
-      animateWave();
-
-      mediaRecorderRef.current.start();
-      setIsRecording(true);
-    } catch (error) {
-      console.error("Error starting recording:", error);
-    }
-  };
-
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-    }
-  };
-
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Reset messages
@@ -370,192 +276,105 @@ export default function Chat() {
     handleSubmit(e);
   };
 
-  useEffect(() => {
-    if (isInputVoice) {
-      const preventDefault = {
-        preventDefault: () => {},
-      } as React.FormEvent;
-
-      handleFormSubmit(preventDefault);
-    }
-  }, [isInputVoice]);
-
-  const displayInput = input.includes("<|sound_start|>")
-    ? "🔊 🔊 Audio 🔊 🔊 "
-    : input;
-
   return (
-    <>
-      <main className="relative p-4 h-svh bg-white">
-        {/* Left Panel */}
-        <div className="flex w-full h-full gap-4">
-          {/* Left Panel Navbar */}
-          <div className="w-20 flex h-full justify-center">
-            <Logo />
-          </div>
-
-          {/* Left Panel Header */}
-          <div className="bg-neutral-50 border border-neutral-200 rounded-lg flex flex-col justify-between w-full overflow-hidden">
-            <div className="w-full p-3 pb-0 ">
-              <div className="mb-4 p-4  rounded-xl">
-                <h1 className="text-xl font-bold">
-                  Ichigo: checkpoint Aug 24, 2024
-                </h1>
-                <p className="mt-2">
-                  This model is capable of multi-modality, you can input either
-                  text, or voice through recording button!
-                </p>
-                <p className="mt-2">
-                  Powered by{" "}
-                  <a
-                    href="https://homebrew.ltd/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-500 hover:underline"
-                  >
-                    Homebrew Ltd
-                  </a>{" "}
-                  |{" "}
-                  <a
-                    href="https://homebrew.ltd/blog/llama3-just-got-ears"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-500 hover:underline"
-                  >
-                    Read our blog post
-                  </a>
-                </p>
-              </div>
-            </div>
-            {/* Left Panel Content */}
-            <div className="flex justify-center  h-full p-2 border-y border-neutral-200 bg-white relative">
-              {/* <CanvasAnimation frequency={frequency} /> */}
-              {/* <Vertex frequency={frequency} /> */}
-              {/* <div className="absolute w-80 h-80 bg-black/20 rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 blur-3xl"></div> */}
-              <BlobAnimation frequency={frequency} />
-            </div>
-            {/* Left Panel Footer */}
-            <div className="flex justify-center p-8 bg-white">
-              <Button
-                onClick={isRecording ? stopRecording : startRecording}
-                className="cursor-pointer"
-              >
-                <div className="flex gap-2 items-center">
-                  <Mic size={16} />
-                  <p>{isRecording ? "Stop Recording" : "Start Recording"}</p>
-                </div>
-              </Button>
-
-              {/* <div className="flex gap-3 justify-center items-end w-full p-4 rounded-lg">
-                {[...Array(6)].map((_, i) => (
-                  <div
-                    key={i}
-                    ref={(el) => {
-                      waveBars.current[i] = el as HTMLDivElement;
-                    }}
-                    className="w-2 rounded-md transition-all duration-100 ease-in-out"
-                    style={{
-                      height: "10px", // Initial height
-                      background: defaultColors[i], // Initial gradient background
-                      transition:
-                        "height 0.2s ease-in-out, background 0.3s ease",
-                    }}
-                  />
-                ))}
-              </div> */}
-            </div>
-          </div>
-
-          {/* Right Panel */}
-          {isChatVisible && (
-            <div className="bg-neutral-50 w-[480px] rounded-lg border border-neutral-200 text-black flex flex-col justify-between overflow-hidden">
-              {/* Right Panel Content */}
-              <div className="h-full w-full overflow-scroll bg-white pb-4">
-                <div
-                  className={twMerge(
-                    "space-y-4 h-full p-4",
-                    !messages.length && "flex justify-center items-center"
-                  )}
-                >
-                  {!messages.length && (
-                    <div className=" flex justify-center items-center flex-col">
-                      <MessageSquareText
-                        size={28}
-                        className="mb-3 text-emerald-600"
-                      />
-                      <h2 className="text-xl font-semibold">No chat history</h2>
-                      <p className="text-gray-600 mt-1">
-                        How can I help u today?
-                      </p>
-                    </div>
-                  )}
-                  {messages.map((m) => {
-                    const displayContent =
-                      m.role === "user" ? (
-                        m.content.startsWith("<|sound_start|>") ? (
-                          <i>🔊 This is an audio message 🔊</i>
-                        ) : (
-                          m.content.split(" ").slice(0, 10).join(" ")
-                        )
-                      ) : (
-                        m.content
-                      );
-                    return (
-                      <div
-                        key={m.id}
-                        className={`p-3 rounded-lg ${
-                          m.role === "user"
-                            ? "bg-primary text-white ml-auto"
-                            : "bg-muted text-black"
-                        } max-w-[80%]`}
-                      >
-                        <p className="font-semibold mb-1">
-                          {m.role === "user" ? "You:" : "Ichigo:"}
-                        </p>
-                        <p className="whitespace-pre-wrap">{displayContent}</p>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Right Panel Footer */}
-              <div className="p-4 border-t border-neutral-200">
-                <form>
-                  <div className="flex justify-end gap-2">
-                    <Input
-                      value={displayInput}
-                      placeholder="Say something..."
-                      className="bg-white"
-                      onChange={(e) => {
-                        handleInputChange(e);
-                        if (e.target.value.includes("<|sound_start|>")) {
-                          setInput("This is an audio message");
-                        }
-                      }}
-                      disabled={isLoading || error != null}
-                    />
-                    <Button
-                      onClick={handleFormSubmit}
-                      disabled={isLoading || !input.trim()}
-                      className="w-9 h-9 p-0 flex-shrink-0"
-                    >
-                      <SendHorizontal size={16} />
-                    </Button>
-                  </div>
-                </form>
-              </div>
-            </div>
+    <main className="px-8 flex flex-col w-full h-svh overflow-hidden">
+      <div className="flex-shrink-0">
+        <Navbar />
+      </div>
+      <div className="h-full bg-background flex justify-center items-center relative">
+        <BlobAnimation frequency={frequency} />
+        <div
+          className={twMerge(
+            "invisible flex flex-col overflow-x-hidden justify-between opacity-0 -right-80 w-full md:w-[400px] border border-border rounded-xl h-[calc(100%-24px)] absolute top-6 bg-background duration-500 transition-[transform, border-radius]",
+            isChatVisible && "visible opacity-1 right-0"
           )}
-        </div>
-        {/* Hide Chat Button */}
-        <Button
-          onClick={() => setIsChatVisible(!isChatVisible)}
-          className="fixed bottom-2 right-2 z-10"
         >
-          <p>{isChatVisible ? "Hide Chat" : "Show Chat"}</p>
-        </Button>
-      </main>
-    </>
+          <div className="h-full overflow-x-hidden mt-2 mb-4">
+            <div
+              className={twMerge(
+                "space-y-4 h-full p-4",
+                !messages.length && "flex justify-center items-center"
+              )}
+            >
+              {!messages.length && (
+                <div className=" flex justify-center items-center flex-col w-full">
+                  <h2 className="text-xl font-semibold">No chat history</h2>
+                  <p className="mt-1 text-muted-foreground">
+                    How can I help u today?
+                  </p>
+                </div>
+              )}
+              <div className="flex flex-col gap-4 overflow-x-hidden">
+                {messages.map((m) => {
+                  const displayContent =
+                    m.role === "user" ? (
+                      m.content.startsWith("<|sound_start|>") ? (
+                        <i>🔊 This is an audio message 🔊</i>
+                      ) : (
+                        m.content.split(" ").slice(0, 10).join(" ")
+                      )
+                    ) : (
+                      m.content
+                    );
+                  return (
+                    <div
+                      key={m.id}
+                      className={twMerge(
+                        "px-3 py-2 rounded-lg max-w-[80%]",
+                        m.role === "user" ? "ml-auto border" : "border"
+                      )}
+                    >
+                      {/* <p className="font-semibold mb-1">
+                        {m.role === "user" ? "You:" : "Ichigo:"}
+                      </p> */}
+                      <p className="whitespace-pre-wrap">{displayContent}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+          <form onSubmit={handleFormSubmit}>
+            <div className="relative">
+              <IoSend
+                size={20}
+                className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer"
+              />
+              <Input
+                ref={inputRef}
+                value={displayInput}
+                onChange={(e) => {
+                  handleInputChange(e);
+                  if (e.target.value.includes("<|sound_start|>")) {
+                    setInput("This is an audio message");
+                  }
+                }}
+                type="text"
+                placeholder="Type a message..."
+                className="w-full h-12 p-4 border-0 border-t rounded-t-none focus-within:outline-none focus-visible:ring-0"
+              />
+            </div>
+          </form>
+        </div>
+      </div>
+      <div className="flex flex-shrink-0 justify-center items-center h-32 relative w-full">
+        <div className="relative w-16 h-16 flex  justify-center items-center cursor-pointer">
+          <div className="absolute top-0 left-0 bg-transparent border-2 border-foreground w-full h-full rounded-full"></div>
+          <div className="w-10 h-10 rounded-full bg-foreground" />
+        </div>
+
+        <div
+          className={twMerge(
+            "absolute right-0 cursor-pointer transition-colors duration-500",
+            isChatVisible && "dark:text-blue-300 text-blue-700"
+          )}
+          onClick={() => setIsChatVisible(!isChatVisible)}
+        >
+          <IoChatbubbleEllipsesSharp size={28} />
+        </div>
+      </div>
+    </main>
   );
-}
+};
+
+export default MainView;
