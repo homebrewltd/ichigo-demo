@@ -514,7 +514,9 @@ const MainView = () => {
                 key={i}
                 className={twMerge(
                   "w-10 h-10 border border-border flex items-center justify-center rounded-lg cursor-pointer",
-                  isActive && "border-2 border-blue-600"
+                  os !== "undetermined" &&
+                    isActive &&
+                    "border-2 border-blue-600"
                 )}
                 onClick={() => setSelectedAudioVisualizer(item.id)}
               >
