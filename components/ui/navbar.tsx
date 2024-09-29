@@ -13,9 +13,15 @@ const Navbar = () => {
         <span className="font-medium">Ichigo イチゴ</span>
       </div>
       <div className="flex gap-4 text-foreground items-center">
-        <FaGithub size={20} />
-        <FaDiscord size={24} />
-        <FaXTwitter size={20} />
+        <a href="https://github.com/janhq/jan" target="_blank">
+          <FaGithub size={20} />
+        </a>
+        <a href="https://discord.com/invite/FTk2MvZwJH" target="_blank">
+          <FaDiscord size={24} />
+        </a>
+        <a href="https://x.com/homebrewltd" target="_blank">
+          <FaXTwitter size={20} />
+        </a>
         <ThemeSwitch />
       </div>
     </nav>
