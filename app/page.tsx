@@ -622,7 +622,7 @@ const MainView = () => {
         </div>
       </div>
 
-      <div className="flex flex-shrink-0 justify-center items-center h-52 relative w-full">
+      <div className="flex flex-shrink-0 justify-center items-center h-40 relative w-full">
         <div className="flex flex-col justify-center items-center gap-4">
           <div
             className={twMerge(
