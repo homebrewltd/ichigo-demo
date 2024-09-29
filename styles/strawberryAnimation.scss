@@ -24,7 +24,6 @@
 }
 
 .face-straw {
-  position: fixed;
   height: 300px;
   width: 300px;
   border-radius: 300px;
@@ -41,10 +40,13 @@
   padding-top: 100px;
   width: 107px;
   transform: rotate(-50deg);
-  transform-origin: center center;
-  animation-name: rotator-straw;
-  animation-duration: 4s;
-  animation-iteration-count: infinite;
+
+  &.run-animate {
+    transform-origin: center center;
+    animation-name: rotator-straw;
+    animation-duration: 4s;
+    animation-iteration-count: infinite;
+  }
 }
 
 .eyes-straw:before,

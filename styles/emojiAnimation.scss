@@ -8,11 +8,11 @@
 }
 
 .face {
-  position: fixed;
   height: 300px;
   width: 300px;
   border-radius: 300px;
   background: #ffd747;
+  border: 10px solid #7e6b24;
   background: -webkit-linear-gradient(
     top,
     #ffd747 0%,
@@ -34,25 +34,17 @@
 
 .rotator {
   display: block;
-  /*margin: 0 auto;*/
-  // margin-left: 44px;
   margin: 0 auto;
   padding-top: 120px;
   width: 107px;
-  -webkit-transform: rotate(11.5deg);
-  -ms-transform: rotate(11.5deg);
-  transform: rotate(11.5deg);
-
-  -ms-transform-origin: center center;
-
-  transform-origin: center center;
-  -webkit-transform-origin: center center;
-  -webkit-animation-name: rotator;
-  animation-name: rotator;
-  -webkit-animation-duration: 4s;
-  animation-duration: 4s;
-  -webkit-animation-iteration-count: infinite;
-  animation-iteration-count: infinite;
+  transform: rotate(0.5deg);
+  &.run-animate {
+    transform: rotate(11.5deg);
+    transform-origin: center center;
+    animation-name: rotator;
+    animation-duration: 4s;
+    animation-iteration-count: infinite;
+  }
 }
 
 .eyes:before,

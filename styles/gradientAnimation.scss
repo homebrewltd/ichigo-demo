@@ -16,7 +16,7 @@ $rotate-radius: 30px;
   0% {
     transform: rotate(0deg);
     box-shadow: 0 0 100px 10px transparent,
-      inset $rotate-radius 0 100px 10px rgba(222, 102, 228, 1);
+      inset $rotate-radius 0 100px 10px rgba(222, 102, 228, 0.5);
   }
 
   25% {
@@ -28,7 +28,7 @@ $rotate-radius: 30px;
   50% {
     transform: rotate(180deg);
     box-shadow: 0 0 100px 10px transparent,
-      inset $rotate-radius 0 100px 10px rgba(25, 179, 245, 1);
+      inset $rotate-radius 0 100px 10px rgba(25, 179, 245, 0.8);
   }
 
   75% {
@@ -40,7 +40,7 @@ $rotate-radius: 30px;
   100% {
     transform: rotate(360deg);
     box-shadow: 0 0 100px 10px transparent,
-      inset $rotate-radius 0 100px 10px rgba(228, 102, 102, 1);
+      inset $rotate-radius 0 100px 10px rgba(228, 102, 102, 0.8);
   }
 }
 
@@ -65,7 +65,7 @@ $rotate-radius: 30px;
 .base {
   width: 200px;
   height: 200px;
-  opacity: 0.5;
+  // opacity: 0.5;
   position: absolute;
   background-color: white;
   z-index: 20;
@@ -73,7 +73,7 @@ $rotate-radius: 30px;
 }
 
 .orange {
-  width: 300px;
+  width: 340px;
   height: 300px;
   position: absolute;
   background: -webkit-linear-gradient(
@@ -87,14 +87,14 @@ $rotate-radius: 30px;
 }
 
 .red {
-  width: 300px;
+  width: 340px;
   height: 300px;
   position: absolute;
   background: -webkit-linear-gradient(
     right,
     rgba(75, 62, 62, 0) 0%,
     rgba(255, 255, 255, 0) 20%,
-    rgba(229, 115, 155, 0.8) 100%
+    rgba(115, 191, 229, 0.8) 100%
   );
   z-index: 20;
   @apply rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2;
@@ -131,8 +131,8 @@ $rotate-radius: 30px;
 }
 
 .purple {
-  width: 280px;
-  height: 280px;
+  width: 400px;
+  height: 400px;
   position: absolute;
   background: -webkit-linear-gradient(
     left,

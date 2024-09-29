@@ -19,7 +19,12 @@ import GradientAnimtion from "@/components/animations/gradientAnimation";
 import EmojiAnimation from "@/components/animations/emojiAnimation";
 import StrawberryAnimation from "@/components/animations/strawberryAnimation";
 
-const audioVisualizer = [
+import { atomWithStorage } from "jotai/utils";
+import { useAtom } from "jotai/react";
+
+const audioVisualizerAtom = atomWithStorage("audioVisualizer", "strawberry");
+
+const audioVisualizerList = [
   {
     id: "strawberry",
     display: "🍓",
@@ -35,6 +40,7 @@ const audioVisualizer = [
 ];
 
 const MainView = () => {
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [isChatVisible, setIsChatVisible] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const [isRecording, setIsRecording] = useState(false);
@@ -86,7 +92,7 @@ const MainView = () => {
   const [frequency, setFrequency] = useState<number>(20);
 
   const [selectedAudioVisualizer, setSelectedAudioVisualizer] =
-    useState("strawberry");
+    useAtom(audioVisualizerAtom);
 
   const {
     error,
@@ -310,6 +316,8 @@ const MainView = () => {
               // Start playing the audio
               audio.play();
 
+              setIsPlayingAudio(true);
+
               // Delay the analysis to ensure the audio is playing
               setTimeout(() => {
                 analyzeFrequency();
@@ -319,6 +327,8 @@ const MainView = () => {
         },
         onend: () => {
           console.debug("OneEnd: ", audioURL.current.length, audioURLIndex);
+          setIsPlayingAudio(false);
+
           if (audioURL.current.length > audioURLIndex.current + 1) {
             audioURLIndex.current = audioURLIndex.current + 1;
             playAudio();
@@ -405,12 +415,11 @@ const MainView = () => {
           audioContext.close();
         }
         cancelAnimationFrame(animationFrameId);
-        // waveBars.current.forEach((bar, i) => {
-        //   if (bar) {
-        //     bar.style.height = "10px"; // Reset to default height
-        //     bar.style.background = defaultColors[i]; // Reset color
-        //   }
-        // });
+        waveBars.current.forEach((bar, i) => {
+          if (bar) {
+            bar.style.height = "10px";
+          }
+        });
 
         const audioBlob = new Blob(audioChunksRef.current, {
           type: "audio/webm",
@@ -459,14 +468,14 @@ const MainView = () => {
         analyser!.getByteFrequencyData(dataArray);
 
         // Adjust each bar height based on audio frequency data
-        // waveBars.current.forEach((bar, i) => {
-        //   const value = dataArray[i];
-        //   const barHeight = (value / 255) * 100; // Normalize to 100%
-        //   if (bar) {
-        //     bar.style.height = `${barHeight}px`;
-        //     // bar.style.background = `hsl(${(value / 255) * 30}, 100%, 50%)`; // Warm color change with HSL
-        //   }
-        // });
+        waveBars.current.forEach((bar, i) => {
+          const value = dataArray[i];
+          const barHeight = (value / 255) * 100; // Normalize to 100%
+          console.log(barHeight);
+          if (bar) {
+            bar.style.height = `${barHeight}px`;
+          }
+        });
 
         animationFrameId = requestAnimationFrame(animateWave);
       };
@@ -498,7 +507,7 @@ const MainView = () => {
       </div>
       <div className="h-full bg-background flex justify-center items-center relative">
         <div className="absolute top-10 left-0 flex gap-2">
-          {audioVisualizer.map((item, i) => {
+          {audioVisualizerList.map((item, i) => {
             return (
               <div
                 key={i}
@@ -510,15 +519,30 @@ const MainView = () => {
             );
           })}
         </div>
-        {selectedAudioVisualizer === "gradient" && (
-          <GradientAnimtion frequency={frequency} isLoading={isLoading} />
+        {os == "undetermined" ? (
+          <Skeleton className="h-[300px] w-[300px] rounded-full" />
+        ) : (
+          <>
+            {selectedAudioVisualizer === "gradient" && (
+              <GradientAnimtion frequency={frequency} isLoading={isLoading} />
+            )}
+            {selectedAudioVisualizer === "emoji" && (
+              <EmojiAnimation
+                frequency={frequency}
+                isLoading={isLoading}
+                isPlayingAudio={isPlayingAudio}
+              />
+            )}
+            {selectedAudioVisualizer === "strawberry" && (
+              <StrawberryAnimation
+                frequency={frequency}
+                isLoading={isLoading}
+                isPlayingAudio={isPlayingAudio}
+              />
+            )}
+          </>
         )}
-        {selectedAudioVisualizer === "emoji" && (
-          <EmojiAnimation frequency={frequency} isLoading={isLoading} />
-        )}
-        {selectedAudioVisualizer === "strawberry" && (
-          <StrawberryAnimation frequency={frequency} isLoading={isLoading} />
-        )}
+
         <div
           className={twMerge(
             "invisible flex flex-col overflow-x-hidden justify-between opacity-0 -right-80 w-full md:w-[400px] border border-border rounded-xl h-[calc(100%-24px)] absolute top-6 bg-background duration-500 transition-[transform, border-radius]",
@@ -598,8 +622,27 @@ const MainView = () => {
         </div>
       </div>
 
-      <div className="flex flex-shrink-0 justify-center items-center h-48 relative w-full">
+      <div className="flex flex-shrink-0 justify-center items-center h-52 relative w-full">
         <div className="flex flex-col justify-center items-center gap-4">
+          <div
+            className={twMerge(
+              "flex gap-3 justify-center items-end w-full p-4 rounded-lg absolute -top-14 h-20 invisible",
+              isRecording && "visible"
+            )}
+          >
+            {[...Array(6)].map((_, i) => (
+              <div
+                key={i}
+                ref={(el) => {
+                  waveBars.current[i] = el as HTMLDivElement;
+                }}
+                className="w-2 rounded-md transition-[height] ease-in-out duration-150 bg-red-200"
+                style={{
+                  height: "10px", // Initial height
+                }}
+              />
+            ))}
+          </div>
           <p className={twMerge("text-xs invisible", isRecording && "visible")}>
             {formatTime(time)}
           </p>

@@ -4,10 +4,16 @@ import { twMerge } from "tailwind-merge";
 interface Props {
   frequency: number;
   isLoading: boolean;
+  isPlayingAudio: boolean;
 }
 
-const StrawberryAnimation = ({ frequency, isLoading }: Props) => {
-  const newHeight = 4 + (frequency * 24) / 100;
+const StrawberryAnimation = ({
+  frequency,
+  isLoading,
+  isPlayingAudio,
+}: Props) => {
+  const defaultHeight = 4;
+  const newHeight = isPlayingAudio ? 4 + (frequency * 24) / 100 : defaultHeight;
 
   return (
     <div
@@ -59,7 +65,7 @@ const StrawberryAnimation = ({ frequency, isLoading }: Props) => {
 
       <div className="face-straw">
         <div className="straw-pattern straw-pattern-1"></div>
-        <span className="rotator-straw">
+        <span className={twMerge("rotator-straw run-animate")}>
           <span className="eyes-straw" />
           <div
             className="absolute w-full h-full bg-black top-44 left-10 transition-[width] ease-in-out duration-150 rotate-360 rounded-xl"

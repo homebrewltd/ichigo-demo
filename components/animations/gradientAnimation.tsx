@@ -28,7 +28,7 @@ const GradientAnimtion = ({ frequency, isLoading }: Props) => {
       }}
     >
       <div
-        className="absolute top-0 left-0 w-full h-full rounded-full overflow-hidden opacity-75"
+        className="absolute top-0 left-0 w-full h-full rounded-full overflow-hidden"
         style={{
           animation: `rainbow 8s infinite linear`,
         }}
