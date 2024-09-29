@@ -15,6 +15,7 @@
     "@radix-ui/react-slot": "^1.1.0",
     "@react-three/drei": "^9.114.0",
     "@react-three/fiber": "^8.17.8",
+    "@react-three/postprocessing": "^2.16.2",
     "@vercel/blob": "^0.23.4",
     "ai": "latest",
     "class-variance-authority": "^0.7.0",

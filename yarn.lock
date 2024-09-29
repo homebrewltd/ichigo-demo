@@ -564,6 +564,17 @@
     suspend-react "^0.1.3"
     zustand "^3.7.1"
 
+"@react-three/postprocessing@^2.16.2":
+  version "2.16.2"
+  resolved "https://registry.yarnpkg.com/@react-three/postprocessing/-/postprocessing-2.16.2.tgz#a6ed5aa0775d843eba845915c41160ce7fff3e79"
+  integrity sha512-2ya1gXLDpzyfbELobi3rPHNNZZCrCfyq20GMYJD1yD7ZyBFSpRG9YSPMBnOal6A89kXanPBw273h6/Dqev0n7g==
+  dependencies:
+    buffer "^6.0.3"
+    maath "^0.6.0"
+    n8ao "^1.6.6"
+    postprocessing "^6.32.1"
+    three-stdlib "^2.23.4"
+
 "@rtsao/scc@^1.1.0":
   version "1.1.0"
   resolved "https://registry.npmjs.org/@rtsao/scc/-/scc-1.1.0.tgz"
@@ -2752,6 +2763,11 @@ maath@^0.10.7:
   resolved "https://registry.yarnpkg.com/maath/-/maath-0.10.8.tgz#cf647544430141bf6982da6e878abb6c4b804e24"
   integrity sha512-tRvbDF0Pgqz+9XUa4jjfgAQ8/aPKmQdWXilFu2tMy4GWj4NOsx99HlULO4IeREfbO3a0sA145DZYyvXPkybm0g==
 
+maath@^0.6.0:
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/maath/-/maath-0.6.0.tgz#7841d0fb95bbb37d19b08b7c5458ef70190950d2"
+  integrity sha512-dSb2xQuP7vDnaYqfoKzlApeRcR2xtN8/f7WV/TMAkBC8552TwTLtOO0JTcSygkYMjNDPoo6V01jTw/aPi4JrMw==
+
 merge-value@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/merge-value/-/merge-value-1.0.0.tgz#d28f8d41c0b37426e032d1059a0d0343302de502"
@@ -2849,6 +2865,11 @@ mz@^2.7.0:
     any-promise "^1.0.0"
     object-assign "^4.0.1"
     thenify-all "^1.0.0"
+
+n8ao@^1.6.6:
+  version "1.9.2"
+  resolved "https://registry.yarnpkg.com/n8ao/-/n8ao-1.9.2.tgz#526462857975ecf7d032bb2f5facab0e1e2357a5"
+  integrity sha512-Y4FZmgsqoZbFWGxSLxymiFSYpt/CNxU5p65+SevEIPzfs2uv6oiZHOuaBLv6+CF+0s1nSBFIOs+BrOxF8aOnmw==
 
 nanoid@3.3.6, nanoid@^3.3.6:
   version "3.3.6"
@@ -3149,6 +3170,11 @@ postcss@^8.4.23, postcss@^8.4.47:
     nanoid "^3.3.7"
     picocolors "^1.1.0"
     source-map-js "^1.2.1"
+
+postprocessing@^6.32.1:
+  version "6.36.3"
+  resolved "https://registry.yarnpkg.com/postprocessing/-/postprocessing-6.36.3.tgz#330eec2be86db36cf227114c97f227c7ad3c95ee"
+  integrity sha512-GtMLwoqg0xdYAgm9lbf6qlKay7HQPb8Z+xAPSzbCUspud/qBj3Y/orJSkqEQVlfxTtm7YAUSv+J39ir51/IwaQ==
 
 potpack@^1.0.1:
   version "1.0.2"
@@ -3800,7 +3826,7 @@ three-mesh-bvh@^0.7.8:
   resolved "https://registry.yarnpkg.com/three-mesh-bvh/-/three-mesh-bvh-0.7.8.tgz#83156e4d3945734db076de1c94809331481b3fdd"
   integrity sha512-BGEZTOIC14U0XIRw3tO4jY7IjP7n7v24nv9JXS1CyeVRWOCkcOMhRnmENUjuV39gktAw4Ofhr0OvIAiTspQrrw==
 
-three-stdlib@^2.29.9:
+three-stdlib@^2.23.4, three-stdlib@^2.29.9:
   version "2.33.0"
   resolved "https://registry.yarnpkg.com/three-stdlib/-/three-stdlib-2.33.0.tgz#f26e1d769da8a6f417d143d6a571137a0414b951"
   integrity sha512-V/uycBuqQOP/3Z+FBtpMdj2Ds5PyfJ3VDfMzktEmG4niOIzv7q1y5uMSbMcng0+057m1l0N147FQxsodQo9zBg==

@@ -1,0 +1,152 @@
+/* Hopefully i will clean this messed up code soon */
+.centerwrap {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-top: -150px;
+  margin-left: -150px;
+}
+
+.face {
+  position: fixed;
+  height: 300px;
+  width: 300px;
+  border-radius: 300px;
+  background: #ffd747;
+  background: -webkit-linear-gradient(
+    top,
+    #ffd747 0%,
+    #fed33f 50%,
+    #ffd440 100%
+  );
+  background: -webkit-linear-gradient(
+    top,
+    #ffd747 0%,
+    #fed33f 50%,
+    #ffd440 100%
+  );
+  background: linear-gradient(to bottom, #ffd747 0%, #fed33f 50%, #ffd440 100%);
+}
+
+.rotator {
+  display: block;
+}
+
+.rotator {
+  display: block;
+  /*margin: 0 auto;*/
+  // margin-left: 44px;
+  margin: 0 auto;
+  padding-top: 120px;
+  width: 107px;
+  -webkit-transform: rotate(11.5deg);
+  -ms-transform: rotate(11.5deg);
+  transform: rotate(11.5deg);
+
+  -ms-transform-origin: center center;
+
+  transform-origin: center center;
+  -webkit-transform-origin: center center;
+  -webkit-animation-name: rotator;
+  animation-name: rotator;
+  -webkit-animation-duration: 4s;
+  animation-duration: 4s;
+  -webkit-animation-iteration-count: infinite;
+  animation-iteration-count: infinite;
+}
+
+.eyes:before,
+.eyes:after {
+  height: 26px;
+  width: 16px;
+  border-radius: 26px;
+  display: inline-block;
+  content: " ";
+  background-color: #da8004;
+  -webkit-animation-name: eyes_resize;
+  animation-name: eyes_resize;
+  -webkit-animation-duration: 4s;
+  animation-duration: 4s;
+  -webkit-animation-iteration-count: infinite;
+  animation-iteration-count: infinite;
+  -webkit-transform: translate(-50%, 0%);
+  -ms-transform: translate(-50%, 0%);
+  transform: translate(-50%, 0%);
+  margin-left: 8px;
+}
+
+.eyes:after {
+  position: absolute;
+  left: 91px;
+}
+
+.mouth {
+  background: linear-gradient(
+    to bottom,
+
+    #ff7559 39%,
+    #ff7559 40%,
+    #ff7559 100%
+  );
+}
+
+@-webkit-keyframes rotator {
+  30% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  35% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  66% {
+    -webkit-transform: rotate(-11.5deg);
+    transform: rotate(-11.5deg);
+  }
+  90% {
+    -webkit-transform: rotate(11.5deg);
+    transform: rotate(11.5deg);
+  }
+  100% {
+    -webkit-transform: rotate(11.5deg);
+    transform: rotate(11.5deg);
+  }
+}
+
+@keyframes rotator {
+  30% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  35% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  66% {
+    -webkit-transform: rotate(-11.5deg);
+    transform: rotate(-11.5deg);
+  }
+  90% {
+    -webkit-transform: rotate(11.5deg);
+    transform: rotate(11.5deg);
+  }
+  100% {
+    -webkit-transform: rotate(11.5deg);
+    transform: rotate(11.5deg);
+  }
+}
+
+@keyframes eyes_resize {
+  10% {
+    width: 26px;
+  }
+  35% {
+    width: 26px;
+  }
+  66% {
+    width: 16px;
+  }
+  100% {
+    width: 16px;
+  }
+}

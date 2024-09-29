@@ -132,11 +132,7 @@ void main() {
 
 `;
 
-interface AppProps {
-  frequency: number;
-}
-
-const Blob = ({ frequency }: AppProps) => {
+const Blob = ({ frequency, isLoading }: Props) => {
   const mesh = useRef<THREE.Mesh>(null);
   const hover = useRef(false);
   const uniforms = useMemo(() => {
@@ -190,14 +186,15 @@ const Blob = ({ frequency }: AppProps) => {
   );
 };
 
-interface AppProps {
+interface Props {
   frequency: number;
+  isLoading: boolean;
 }
 
-const BlobAnimation = ({ frequency }: AppProps) => {
+const BlobAnimation = ({ frequency, isLoading }: Props) => {
   return (
     <Canvas camera={{ position: [0.0, 0.0, 8.0] }}>
-      <Blob frequency={frequency} />
+      <Blob frequency={frequency} isLoading={isLoading} />
     </Canvas>
   );
 };

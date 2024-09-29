@@ -2,7 +2,6 @@
 
 import * as THREE from "three";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import BlobAnimation from "@/components/animations/blobAnimation";
 import Navbar from "@/components/ui/navbar";
 import { IoChatbubbleEllipsesSharp } from "react-icons/io5";
 import { IoSend } from "react-icons/io5";
@@ -16,12 +15,30 @@ import WavEncoder from "wav-encoder";
 import { formatTime } from "@/lib/utils";
 import { setTimeout } from "timers";
 import { Skeleton } from "@/components/ui/skeleton";
+import GradientAnimtion from "@/components/animations/gradientAnimation";
+import EmojiAnimation from "@/components/animations/emojiAnimation";
+import StrawberryAnimation from "@/components/animations/strawberryAnimation";
+
+const audioVisualizer = [
+  {
+    id: "strawberry",
+    display: "🍓",
+  },
+  {
+    id: "emoji",
+    display: "😀",
+  },
+  {
+    id: "gradient",
+    display: "🖲️",
+  },
+];
 
 const MainView = () => {
   const [isChatVisible, setIsChatVisible] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const [isRecording, setIsRecording] = useState(false);
-  const [frequency, setFrequency] = useState<number>(20);
+  const [frequency, setFrequency] = useState<number>(0);
   const audioURL = useRef<string[]>([]);
   const audioURLIndex = useRef(-1);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -67,6 +84,9 @@ const MainView = () => {
   ];
 
   const [frequency, setFrequency] = useState<number>(20);
+
+  const [selectedAudioVisualizer, setSelectedAudioVisualizer] =
+    useState("strawberry");
 
   const {
     error,
@@ -477,7 +497,28 @@ const MainView = () => {
         <Navbar />
       </div>
       <div className="h-full bg-background flex justify-center items-center relative">
-        <BlobAnimation frequency={frequency} />
+        <div className="absolute top-10 left-0 flex gap-2">
+          {audioVisualizer.map((item, i) => {
+            return (
+              <div
+                key={i}
+                className="w-10 h-10 border border-border flex items-center justify-center rounded-lg cursor-pointer"
+                onClick={() => setSelectedAudioVisualizer(item.id)}
+              >
+                <p>{item.display}</p>
+              </div>
+            );
+          })}
+        </div>
+        {selectedAudioVisualizer === "gradient" && (
+          <GradientAnimtion frequency={frequency} isLoading={isLoading} />
+        )}
+        {selectedAudioVisualizer === "emoji" && (
+          <EmojiAnimation frequency={frequency} isLoading={isLoading} />
+        )}
+        {selectedAudioVisualizer === "strawberry" && (
+          <StrawberryAnimation frequency={frequency} isLoading={isLoading} />
+        )}
         <div
           className={twMerge(
             "invisible flex flex-col overflow-x-hidden justify-between opacity-0 -right-80 w-full md:w-[400px] border border-border rounded-xl h-[calc(100%-24px)] absolute top-6 bg-background duration-500 transition-[transform, border-radius]",
