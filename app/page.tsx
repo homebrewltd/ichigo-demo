@@ -508,10 +508,14 @@ const MainView = () => {
       <div className="h-full bg-background flex justify-center items-center relative">
         <div className="absolute top-10 left-0 flex gap-2">
           {audioVisualizerList.map((item, i) => {
+            const isActive = selectedAudioVisualizer === item.id;
             return (
               <div
                 key={i}
-                className="w-10 h-10 border border-border flex items-center justify-center rounded-lg cursor-pointer"
+                className={twMerge(
+                  "w-10 h-10 border border-border flex items-center justify-center rounded-lg cursor-pointer",
+                  isActive && "border-2 border-blue-600"
+                )}
                 onClick={() => setSelectedAudioVisualizer(item.id)}
               >
                 <p>{item.display}</p>
