@@ -197,10 +197,12 @@ const MainView = () => {
     }
 
     if (event.code === "KeyE" && prefix && event.shiftKey) {
-      if (isRecording) {
-        stopRecording();
-      } else {
-        startRecording();
+      if (!isPlayingAudio) {
+        if (isRecording) {
+          stopRecording();
+        } else {
+          startRecording();
+        }
       }
     }
   });
@@ -577,6 +579,7 @@ const MainView = () => {
               <Input
                 ref={inputRef}
                 value={maskingValueInput}
+                disabled={isPlayingAudio}
                 onClick={handleFormSubmit}
                 onChange={(e) => {
                   handleInputChange(e);
@@ -618,7 +621,10 @@ const MainView = () => {
             {formatTime(time)}
           </p>
           <div
-            className="relative w-16 h-16 flex  justify-center items-center cursor-pointer"
+            className={twMerge(
+              "relative w-16 h-16 flex  justify-center items-center cursor-pointer",
+              isPlayingAudio && "pointer-events-none opacity-50"
+            )}
             onClick={isRecording ? stopRecording : startRecording}
           >
             <svg
@@ -665,7 +671,13 @@ const MainView = () => {
             {os === "undetermined" ? (
               <Skeleton className="h-4 w-[80px]" />
             ) : (
-              <>{isMac ? "⌘" : "Ctrl"} + Shift + E</>
+              <span
+                className={twMerge(
+                  isPlayingAudio && "pointer-events-none opacity-50"
+                )}
+              >
+                {isMac ? "⌘" : "Ctrl"} + Shift + E
+              </span>
             )}
           </span>
         </div>
