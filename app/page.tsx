@@ -673,13 +673,13 @@ const MainView = () => {
               )}
             />
           </div>
-          <span className="hidden md:block text-xs">
+          {/* <span className="hidden md:block text-xs">
             {os === "undetermined" ? (
               <Skeleton className="h-4 w-[80px]" />
             ) : (
               <>{isMac ? "⌘" : "Ctrl"} + Shift + D</>
             )}
-          </span>
+          </span> */}
         </div>
 
         <div
