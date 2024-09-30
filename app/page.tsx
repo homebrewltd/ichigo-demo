@@ -196,7 +196,7 @@ const MainView = () => {
       setIsChatVisible(!isChatVisible);
     }
 
-    if (event.code === "KeyD" && prefix && event.shiftKey) {
+    if (event.code === "KeyE" && prefix && event.shiftKey) {
       if (isRecording) {
         stopRecording();
       } else {
@@ -661,13 +661,13 @@ const MainView = () => {
               )}
             />
           </div>
-          {/* <span className="hidden md:block text-xs">
+          <span className="hidden md:block text-xs">
             {os === "undetermined" ? (
               <Skeleton className="h-4 w-[80px]" />
             ) : (
-              <>{isMac ? "⌘" : "Ctrl"} + Shift + D</>
+              <>{isMac ? "⌘" : "Ctrl"} + Shift + E</>
             )}
-          </span> */}
+          </span>
         </div>
 
         <div
