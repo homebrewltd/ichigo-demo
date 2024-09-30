@@ -1,3 +1,20 @@
+"""
+This file contains code adapted from the fish-speech project:
+https://github.com/fishaudio/fish-speech
+
+Original work Copyright (c) [2024] fishaudio
+Modified work Copyright (c) [2024] [homebrewltd]
+
+This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 
+International License (CC BY-NC-SA 4.0). To view a copy of this license, visit:
+https://creativecommons.org/licenses/by-nc-sa/4.0/
+
+or send a letter to Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.
+
+For the full license text, please see:
+https://github.com/fishaudio/fish-speech/blob/main/LICENSE
+"""
+
 import base64
 import io
 import json
