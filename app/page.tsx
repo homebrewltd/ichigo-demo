@@ -320,6 +320,7 @@ const MainView = () => {
 
   // Handle get TTS API
   const handleTTS = async (messageId: string, text: string) => {
+    if (!text) return;
     try {
       const response = await fetch("/api/tts", {
         method: "POST",
