@@ -50,9 +50,6 @@ const MainView = () => {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const { load } = useGlobalAudioPlayer();
-  const [lastPlayedMessageId, setLastPlayedMessageId] = useState<string | null>(
-    null
-  );
   const audioAnalyser = useRef<THREE.AudioAnalyser | null>(null);
   const currentText = useRef("");
   const currentCount = useRef(0);
@@ -72,14 +69,11 @@ const MainView = () => {
     useAtom(audioVisualizerAtom);
 
   const {
-    error,
     input,
     isLoading,
+    messages,
     handleInputChange,
     handleSubmit,
-    messages,
-    reload,
-    stop,
     setInput,
   } = useChat({
     keepLastMessageOnError: true,
@@ -165,14 +159,7 @@ const MainView = () => {
 
     currentCount.current += 1;
     lastMsg.current = lastMessage?.content;
-  }, [
-    messages,
-    currentText,
-    currentCount,
-    lastMsg,
-    lastPlayedMessageId,
-    checkpoint,
-  ]);
+  }, [messages]);
 
   // Send message when user stop record
   useEffect(() => {
