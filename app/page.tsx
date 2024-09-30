@@ -61,35 +61,12 @@ const MainView = () => {
   let audioContext: AudioContext;
   let animationFrameId: number;
 
-  const defaultColors = [
-    "linear-gradient(135deg, #FF5733, #FFC300)",
-    "linear-gradient(135deg, #33FF57, #33FFB8)",
-    "linear-gradient(135deg, #3357FF, #3B9FFF)",
-    "linear-gradient(135deg, #3357FF, #3B9FFF)",
-    "linear-gradient(135deg, #FF33A1, #FF5B93)",
-    "linear-gradient(135deg, #FFC300, #FF5733)",
-  ];
-
-  const [frequency, setFrequency] = useState<number>(20);
-  const [isChatVisible, setIsChatVisible] = useState(false);
-
-  var currentText = useRef("");
-  var currentCount = useRef(0);
-  var lastMsg = useRef("");
-  var checkpoint = useRef(10);
-  let audioContext: AudioContext;
-  let animationFrameId: number;
-
-  const defaultColors = [
-    "linear-gradient(135deg, #FF5733, #FFC300)",
-    "linear-gradient(135deg, #33FF57, #33FFB8)",
-    "linear-gradient(135deg, #3357FF, #3B9FFF)",
-    "linear-gradient(135deg, #3357FF, #3B9FFF)",
-    "linear-gradient(135deg, #FF33A1, #FF5B93)",
-    "linear-gradient(135deg, #FFC300, #FF5733)",
-  ];
-
-  const [frequency, setFrequency] = useState<number>(20);
+  const listRef = useRef<HTMLDivElement>(null);
+  const prevScrollTop = useRef(0);
+  const isUserManuallyScrollingUp = useRef(false);
+  const waveBars = useRef<HTMLDivElement[]>([]);
+  const maxTime = 15;
+  const [time, setTime] = useState(0);
 
   const [selectedAudioVisualizer, setSelectedAudioVisualizer] =
     useAtom(audioVisualizerAtom);
