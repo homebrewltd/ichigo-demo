@@ -14,9 +14,7 @@ const EmojiAnimation = ({ frequency, isLoading, isPlayingAudio }: Props) => {
   return (
     <div className={twMerge("centerwrap", isLoading && "bounce")}>
       <div className="face">
-        <span
-          className={twMerge("rotator-straw", !isPlayingAudio && "run-animate")}
-        >
+        <span className={twMerge("rotator", !isPlayingAudio && "run-animate")}>
           <span className="eyes" />
           <div
             className="absolute mouth w-full h-full bg-white top-44 left-10 transition-[width] ease-in-out duration-150 rotate-360 rounded-xl"
