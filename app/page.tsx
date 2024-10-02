@@ -3,7 +3,7 @@
 import * as THREE from "three";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Navbar from "@/components/ui/navbar";
-import { IoChatbubbleEllipsesSharp } from "react-icons/io5";
+import { IoChatbubbleEllipsesSharp, IoSettingsSharp } from "react-icons/io5";
 import { IoSend } from "react-icons/io5";
 import { twMerge } from "tailwind-merge";
 import { Input } from "@/components/ui/input";
@@ -39,6 +39,7 @@ const audioVisualizerList = [
 const MainView = () => {
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [isChatVisible, setIsChatVisible] = useState(false);
+  const [isSettingVisible, setIsSettingVisible] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [frequency, setFrequency] = useState<number>(0);
@@ -699,8 +700,23 @@ const MainView = () => {
           </div>
         </div>
 
-        <div className="absolute left-0 w-[300px] max-w-[300px] bottom-10 p-4 border border-border hidden lg:block rounded-lg">
-          <AudioSelector />
+        <div className="absolute left-0 w-[300px] max-w-[300px] bottom-16 hidden lg:block">
+          <div
+            className={twMerge(
+              "p-4 border border-border rounded-lg mb-2 -left-80 invisible transition-all duration-500 relative",
+              isSettingVisible && "visible opacity-1 left-0"
+            )}
+          >
+            <AudioSelector />
+          </div>
+          <IoSettingsSharp
+            size={28}
+            onClick={() => setIsSettingVisible(!isSettingVisible)}
+            className={twMerge(
+              "cursor-pointer",
+              isSettingVisible && "dark:text-blue-300 text-blue-700 "
+            )}
+          />
         </div>
       </div>
     </main>
