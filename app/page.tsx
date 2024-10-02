@@ -16,7 +16,7 @@ import { formatTime } from "@/lib/utils";
 import { setTimeout } from "timers";
 import { Skeleton } from "@/components/ui/skeleton";
 import GradientAnimtion from "@/components/animations/gradientAnimation";
-import EmojiAnimation from "@/components/animations/emojiAnimation";
+
 import StrawberryAnimation from "@/components/animations/strawberryAnimation";
 
 import { atomWithStorage } from "jotai/utils";
@@ -29,10 +29,6 @@ const audioVisualizerList = [
   {
     id: "strawberry",
     display: "🍓",
-  },
-  {
-    id: "emoji",
-    display: "😀",
   },
   {
     id: "gradient",
@@ -500,13 +496,6 @@ const MainView = () => {
           <>
             {selectedAudioVisualizer === "gradient" && (
               <GradientAnimtion frequency={frequency} isLoading={isLoading} />
-            )}
-            {selectedAudioVisualizer === "emoji" && (
-              <EmojiAnimation
-                frequency={frequency}
-                isLoading={isLoading}
-                isPlayingAudio={isPlayingAudio}
-              />
             )}
             {selectedAudioVisualizer === "strawberry" && (
               <StrawberryAnimation
