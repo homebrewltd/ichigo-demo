@@ -1,37 +1,44 @@
 // app/api/sse/route.ts
-import { NextResponse } from "next/server";
+export const runtime = "nodejs";
 
-let clients: any[] = []; // List of clients
+export const dynamic = "force-dynamic";
 
-export async function GET(req: Request) {
-  // Set headers for SSE
-  const res = new NextResponse(
-    new ReadableStream({
-      start(controller) {
-        // Push a message every second
-        const interval = setInterval(() => {
-          const userCount = clients.length;
-          controller.enqueue(`data: ${userCount}\n\n`);
-        }, 1000);
+import { NextRequest, NextResponse } from "next/server";
 
-        // Clean up when the stream closes
-        req.signal.addEventListener("abort", () => {
-          clearInterval(interval);
-        });
-      },
-    })
-  );
+let clients: Array<ReadableStreamDefaultController<Uint8Array>> = []; // Store clients
 
-  res.headers.set("Content-Type", "text/event-stream");
-  res.headers.set("Cache-Control", "no-cache");
-  res.headers.set("Connection", "keep-alive");
+export async function GET(req: NextRequest) {
+  // Create a new ReadableStream for the SSE
+  const stream = new ReadableStream<Uint8Array>({
+    start(controller) {
+      // Add the controller to the clients array
+      clients.push(controller);
 
-  clients.push(res); // Add the response to the list of clients
+      // Function to send updates
+      const sendUpdate = () => {
+        const userCount = clients.length; // Current number of connected clients
+        // Create a data message in the format expected by SSE
+        const message = `data: ${userCount}\n\n`;
+        controller.enqueue(new TextEncoder().encode(message)); // Enqueue message as Uint8Array
+      };
 
-  // Cleanup on disconnect
-  req.signal.addEventListener("abort", () => {
-    clients = clients.filter((client) => client !== res);
+      // Send updates every second
+      const interval = setInterval(sendUpdate, 1000);
+
+      // Cleanup on disconnect
+      req.signal.addEventListener("abort", () => {
+        clearInterval(interval);
+        clients = clients.filter((client) => client !== controller); // Remove client on disconnect
+      });
+    },
   });
 
-  return res;
+  // Set headers for the SSE response
+  const headers = new Headers({
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache",
+    Connection: "keep-alive",
+  });
+
+  return new NextResponse(stream, { headers }); // Return the stream response
 }
