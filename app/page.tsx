@@ -473,9 +473,10 @@ const MainView = () => {
         <Navbar />
       </div>
 
-      <RealtimeTracker />
-
       <div className="h-full bg-background flex justify-center items-center relative">
+        <div className="absolute top-10 right-0 flex gap-2">
+          <RealtimeTracker />
+        </div>
         <div className="absolute top-10 left-0 flex gap-2">
           {audioVisualizerList.map((item, i) => {
             const isActive = selectedAudioVisualizer === item.id;
@@ -495,6 +496,7 @@ const MainView = () => {
             );
           })}
         </div>
+
         {os == "undetermined" ? (
           <Skeleton className="h-[300px] w-[300px] rounded-full" />
         ) : (
