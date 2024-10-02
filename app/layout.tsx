@@ -15,7 +15,7 @@ const geistMono = localFont({
 });
 
 export const metadata = {
-  title: "Ichigo 100% -  Homebrew",
+  title: "Ichigo - Homebrew",
   description: "Ichigo model from Homebrew Research.",
 };
 

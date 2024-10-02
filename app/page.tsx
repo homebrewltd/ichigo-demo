@@ -197,12 +197,12 @@ const MainView = () => {
     }
 
     if (event.code === "KeyE" && prefix && event.shiftKey) {
-      if (!isPlayingAudio) {
-        if (isRecording) {
-          stopRecording();
-        } else {
-          startRecording();
-        }
+      if (isLoading) return null;
+      if (isPlayingAudio) return null;
+      if (isRecording) {
+        stopRecording();
+      } else {
+        startRecording();
       }
     }
   });
@@ -278,12 +278,9 @@ const MainView = () => {
               audio.setBuffer(buffer);
               audioAnalyser.current = new THREE.AudioAnalyser(audio, 32);
               console.debug(audioAnalyser.current, "audioAnalyser.current");
-
               // Start playing the audio
               audio.play();
-
               setIsPlayingAudio(true);
-
               // Delay the analysis to ensure the audio is playing
               setTimeout(() => {
                 analyzeFrequency();
@@ -291,10 +288,10 @@ const MainView = () => {
             }
           );
         },
+
         onend: () => {
           console.debug("OneEnd: ", audioURL.current.length, audioURLIndex);
           setIsPlayingAudio(false);
-
           if (audioURL.current.length > audioURLIndex.current + 1) {
             audioURLIndex.current = audioURLIndex.current + 1;
             playAudio();
@@ -310,6 +307,7 @@ const MainView = () => {
   // Handle get TTS API
   const handleTTS = async (messageId: string, text: string) => {
     if (!text) return;
+
     try {
       const response = await fetch("/api/tts", {
         method: "POST",
@@ -378,6 +376,7 @@ const MainView = () => {
 
       mediaRecorderRef.current.onstop = async () => {
         console.debug(audioContext);
+        setIsPlayingAudio(true);
         if (audioContext) {
           audioContext.close();
         }
@@ -428,6 +427,7 @@ const MainView = () => {
           setInput(`<|sound_start|>${data.tokens}`);
         } catch (error) {
           console.error("Error tokenizing audio:", error);
+          setIsPlayingAudio(false);
         }
       };
 
@@ -438,7 +438,6 @@ const MainView = () => {
         waveBars.current.forEach((bar, i) => {
           const value = dataArray[i];
           const barHeight = (value / 255) * 100; // Normalize to 100%
-          console.log(barHeight);
           if (bar) {
             bar.style.height = `${barHeight}px`;
           }
@@ -448,11 +447,11 @@ const MainView = () => {
       };
 
       animateWave();
-
       mediaRecorderRef.current.start();
       setIsRecording(true);
     } catch (error) {
       console.error("Error starting recording:", error);
+      setIsPlayingAudio(false);
     }
   };
 
@@ -472,6 +471,7 @@ const MainView = () => {
       <div className="flex-shrink-0">
         <Navbar />
       </div>
+
       <div className="h-full bg-background flex justify-center items-center relative">
         <div className="absolute top-10 left-0 flex gap-2">
           {audioVisualizerList.map((item, i) => {
@@ -579,7 +579,7 @@ const MainView = () => {
               <Input
                 ref={inputRef}
                 value={maskingValueInput}
-                disabled={isPlayingAudio}
+                disabled={isPlayingAudio || isLoading}
                 onClick={handleFormSubmit}
                 onChange={(e) => {
                   handleInputChange(e);
@@ -623,7 +623,7 @@ const MainView = () => {
           <div
             className={twMerge(
               "relative w-16 h-16 flex  justify-center items-center cursor-pointer",
-              isPlayingAudio && "pointer-events-none opacity-50"
+              (isPlayingAudio || isLoading) && "pointer-events-none opacity-50"
             )}
             onClick={isRecording ? stopRecording : startRecording}
           >
@@ -667,13 +667,15 @@ const MainView = () => {
               )}
             />
           </div>
+
           <span className="hidden md:block text-xs">
             {os === "undetermined" ? (
               <Skeleton className="h-4 w-[80px]" />
             ) : (
               <span
                 className={twMerge(
-                  isPlayingAudio && "pointer-events-none opacity-50"
+                  (isPlayingAudio || isLoading) &&
+                    "pointer-events-none opacity-50"
                 )}
               >
                 {isMac ? "⌘" : "Ctrl"} + Shift + E
