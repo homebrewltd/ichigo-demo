@@ -710,7 +710,7 @@ const MainView = () => {
           </div>
         </div>
 
-        <div className="absolute left-0 w-[300px] max-w-[300px] bottom-10 p-4 border border-border hidden lg:block">
+        <div className="absolute left-0 w-[300px] max-w-[300px] bottom-10 p-4 border border-border hidden lg:block rounded-lg">
           <AudioSelector />
         </div>
       </div>
