@@ -21,6 +21,7 @@ import StrawberryAnimation from "@/components/animations/strawberryAnimation";
 
 import { atomWithStorage } from "jotai/utils";
 import { useAtom } from "jotai/react";
+import RealtimeTracker from "@/components/ui/realtimeTracker";
 
 const audioVisualizerAtom = atomWithStorage("audioVisualizer", "strawberry");
 
@@ -471,6 +472,8 @@ const MainView = () => {
       <div className="flex-shrink-0">
         <Navbar />
       </div>
+
+      <RealtimeTracker />
 
       <div className="h-full bg-background flex justify-center items-center relative">
         <div className="absolute top-10 left-0 flex gap-2">
