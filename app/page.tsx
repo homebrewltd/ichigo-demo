@@ -21,7 +21,7 @@ import StrawberryAnimation from "@/components/animations/strawberryAnimation";
 
 import { atomWithStorage } from "jotai/utils";
 import { useAtom } from "jotai/react";
-import RealtimeTracker from "@/components/ui/realtimeTracker";
+import AudioSelector from "@/components/ui/audioSelector";
 
 const audioVisualizerAtom = atomWithStorage("audioVisualizer", "strawberry");
 
@@ -474,9 +474,6 @@ const MainView = () => {
       </div>
 
       <div className="h-full bg-background flex justify-center items-center relative">
-        <div className="absolute top-10 right-0 flex gap-2">
-          <RealtimeTracker />
-        </div>
         <div className="absolute top-10 left-0 flex gap-2">
           {audioVisualizerList.map((item, i) => {
             const isActive = selectedAudioVisualizer === item.id;
@@ -601,8 +598,8 @@ const MainView = () => {
         </div>
       </div>
 
-      <div className="flex flex-shrink-0 justify-center items-center h-40 relative w-full">
-        <div className="flex flex-col justify-center items-center gap-4">
+      <div className="flex flex-shrink-0 justify-center items-center h-48 relative w-full ">
+        <div className="flex flex-col justify-center items-center gap-4 ">
           <div
             className={twMerge(
               "flex gap-3 justify-center items-end w-full p-4 rounded-lg absolute -top-14 h-20 invisible",
@@ -711,6 +708,10 @@ const MainView = () => {
               )}
             />
           </div>
+        </div>
+
+        <div className="absolute left-0 w-[300px] max-w-[300px] bottom-10 p-4 border border-border hidden lg:block">
+          <AudioSelector />
         </div>
       </div>
     </main>
