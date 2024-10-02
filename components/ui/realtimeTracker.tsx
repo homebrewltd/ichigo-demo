@@ -19,7 +19,7 @@ const RealtimeTracker: React.FC = () => {
 
   return (
     <div>
-      <h1>{userCount} Users online</h1>
+      <h1>{userCount} Users Online</h1>
     </div>
   );
 };
