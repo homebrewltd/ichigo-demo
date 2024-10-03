@@ -4,6 +4,7 @@ import { FaXTwitter } from "react-icons/fa6";
 
 import Logo from "./logo";
 import ThemeSwitch from "./themeSwitch";
+import RealtimeTracker from "./realtimeTracker";
 
 const Navbar = () => {
   return (
@@ -12,6 +13,7 @@ const Navbar = () => {
         <Logo />
         <span className="font-medium">Ichigo イチゴ</span>
       </div>
+      <RealtimeTracker />
       <div className="flex gap-4 text-foreground items-center">
         <a href="https://github.com/janhq/jan" target="_blank">
           <FaGithub size={20} />

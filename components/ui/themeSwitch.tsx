@@ -18,7 +18,7 @@ const ThemeSwitch = () => {
 
   return (
     <div
-      className="flex ml-8 items-center justify-center cursor-pointer"
+      className="hidden md:flex ml-8 items-center justify-center cursor-pointer"
       onClick={() => setTheme(resolvedTheme === "light" ? "dark" : "light")}
     >
       {renderIcon()}

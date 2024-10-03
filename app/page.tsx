@@ -3,7 +3,7 @@
 import * as THREE from "three";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Navbar from "@/components/ui/navbar";
-import { IoChatbubbleEllipsesSharp } from "react-icons/io5";
+import { IoChatbubbleEllipsesSharp, IoSettingsSharp } from "react-icons/io5";
 import { IoSend } from "react-icons/io5";
 import { twMerge } from "tailwind-merge";
 import { Input } from "@/components/ui/input";
@@ -16,12 +16,12 @@ import { formatTime } from "@/lib/utils";
 import { setTimeout } from "timers";
 import { Skeleton } from "@/components/ui/skeleton";
 import GradientAnimtion from "@/components/animations/gradientAnimation";
-import EmojiAnimation from "@/components/animations/emojiAnimation";
+
 import StrawberryAnimation from "@/components/animations/strawberryAnimation";
 
 import { atomWithStorage } from "jotai/utils";
 import { useAtom } from "jotai/react";
-import RealtimeTracker from "@/components/ui/realtimeTracker";
+import AudioSelector from "@/components/ui/audioSelector";
 
 const audioVisualizerAtom = atomWithStorage("audioVisualizer", "strawberry");
 
@@ -29,10 +29,6 @@ const audioVisualizerList = [
   {
     id: "strawberry",
     display: "🍓",
-  },
-  {
-    id: "emoji",
-    display: "😀",
   },
   {
     id: "gradient",
@@ -43,6 +39,7 @@ const audioVisualizerList = [
 const MainView = () => {
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [isChatVisible, setIsChatVisible] = useState(false);
+  const [isSettingVisible, setIsSettingVisible] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [frequency, setFrequency] = useState<number>(0);
@@ -474,9 +471,6 @@ const MainView = () => {
       </div>
 
       <div className="h-full bg-background flex justify-center items-center relative">
-        <div className="absolute top-10 right-0 flex gap-2">
-          <RealtimeTracker />
-        </div>
         <div className="absolute top-10 left-0 flex gap-2">
           {audioVisualizerList.map((item, i) => {
             const isActive = selectedAudioVisualizer === item.id;
@@ -503,13 +497,6 @@ const MainView = () => {
           <>
             {selectedAudioVisualizer === "gradient" && (
               <GradientAnimtion frequency={frequency} isLoading={isLoading} />
-            )}
-            {selectedAudioVisualizer === "emoji" && (
-              <EmojiAnimation
-                frequency={frequency}
-                isLoading={isLoading}
-                isPlayingAudio={isPlayingAudio}
-              />
             )}
             {selectedAudioVisualizer === "strawberry" && (
               <StrawberryAnimation
@@ -601,8 +588,8 @@ const MainView = () => {
         </div>
       </div>
 
-      <div className="flex flex-shrink-0 justify-center items-center h-40 relative w-full">
-        <div className="flex flex-col justify-center items-center gap-4">
+      <div className="flex flex-shrink-0 justify-center items-center h-48 relative w-full ">
+        <div className="flex flex-col justify-center items-center gap-4 ">
           <div
             className={twMerge(
               "flex gap-3 justify-center items-end w-full p-4 rounded-lg absolute -top-14 h-20 invisible",
@@ -711,6 +698,25 @@ const MainView = () => {
               )}
             />
           </div>
+        </div>
+
+        <div className="absolute left-0 w-[300px] max-w-[300px] bottom-16 hidden lg:block">
+          <div
+            className={twMerge(
+              "p-4 border border-border rounded-lg mb-2 -left-80 invisible transition-all duration-500 relative",
+              isSettingVisible && "visible opacity-1 left-0"
+            )}
+          >
+            <AudioSelector />
+          </div>
+          <IoSettingsSharp
+            size={28}
+            onClick={() => setIsSettingVisible(!isSettingVisible)}
+            className={twMerge(
+              "cursor-pointer",
+              isSettingVisible && "dark:text-blue-300 text-blue-700 "
+            )}
+          />
         </div>
       </div>
     </main>

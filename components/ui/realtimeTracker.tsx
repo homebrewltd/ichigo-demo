@@ -1,5 +1,6 @@
 "use client";
 
+import { formatCompactNumber } from "@/lib/utils";
 import { useEffect, useState } from "react";
 
 const RealtimeTracker: React.FC = () => {
@@ -19,7 +20,7 @@ const RealtimeTracker: React.FC = () => {
 
   return (
     <div>
-      <h1>{userCount} Users online</h1>
+      <h1>{formatCompactNumber(userCount)} Users Online</h1>
     </div>
   );
 };
