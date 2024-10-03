@@ -78,11 +78,29 @@ const StrawberryAnimation = ({
                 transition: "linear",
               }}
             >
-              <div className="eye-straw-2"></div>
-              <div className="eye-straw-2"></div>
+              <div className="eye-straw-2 relative">
+                <div className="blink delay-75"></div>
+              </div>
+              <div className="eye-straw-2">
+                <div className="blink"></div>
+              </div>
             </div>
             <div
-              className="mouth-test flex-shrink-0"
+              className="blush"
+              style={{
+                scale: `${newHeight}`,
+                transition: "linear",
+              }}
+            ></div>
+            <div
+              className="blush right"
+              style={{
+                scale: `${newHeight}`,
+                transition: "linear",
+              }}
+            ></div>
+            <div
+              className="mouth-straw flex-shrink-0"
               style={
                 {
                   scale: `${newHeight}`,

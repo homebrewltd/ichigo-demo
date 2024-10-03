@@ -22,6 +22,7 @@ import StrawberryAnimation from "@/components/animations/strawberryAnimation";
 import { atomWithStorage } from "jotai/utils";
 import { useAtom } from "jotai/react";
 import AudioSelector from "@/components/ui/audioSelector";
+import { Button } from "@/components/ui/button";
 
 const audioVisualizerAtom = atomWithStorage("audioVisualizer", "strawberry");
 
@@ -47,7 +48,7 @@ const MainView = () => {
   const audioURLIndex = useRef(-1);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
-  const { load } = useGlobalAudioPlayer();
+  const { load, stop } = useGlobalAudioPlayer();
   const audioAnalyser = useRef<THREE.AudioAnalyser | null>(null);
   const currentText = useRef("");
   const currentCount = useRef(0);
@@ -62,6 +63,7 @@ const MainView = () => {
   const waveBars = useRef<HTMLDivElement[]>([]);
   const maxTime = 15;
   const [time, setTime] = useState(0);
+  const [isStopAudio, setIsStopAudio] = useState(false);
 
   const [selectedAudioVisualizer, setSelectedAudioVisualizer] =
     useAtom(audioVisualizerAtom);
@@ -268,8 +270,8 @@ const MainView = () => {
       load(audioURL.current[audioURLIndex.current], {
         autoplay: true,
         format: "wav",
-        onload() {
-          // Load the audio buffer
+
+        onplay: () => {
           audioLoader.load(
             audioURL.current[audioURLIndex.current],
             (buffer) => {
@@ -285,6 +287,11 @@ const MainView = () => {
               }, 100); // Wait 100ms before starting to analyze
             }
           );
+        },
+
+        onstop() {
+          audio.stop();
+          setIsPlayingAudio(false);
         },
 
         onend: () => {
@@ -305,6 +312,7 @@ const MainView = () => {
   // Handle get TTS API
   const handleTTS = async (messageId: string, text: string) => {
     if (!text) return;
+    if (isStopAudio) return;
 
     try {
       const response = await fetch("/api/tts", {
@@ -344,6 +352,7 @@ const MainView = () => {
     checkpoint.current = 10;
     audioURL.current = [];
     audioURLIndex.current = -1;
+    setIsStopAudio(false);
     handleSubmit(e);
   };
 
@@ -463,6 +472,19 @@ const MainView = () => {
       }, 500);
     }
   };
+
+  useEffect(() => {
+    if (isStopAudio) {
+      currentText.current = "";
+      currentCount.current = 0;
+      lastMsg.current = "";
+      checkpoint.current = 10;
+      audioURL.current = [];
+      audioURLIndex.current = -1;
+      stop();
+      setIsPlayingAudio(false);
+    }
+  }, [isStopAudio]);
 
   return (
     <main className="px-8 flex flex-col w-full h-svh overflow-hidden">
@@ -612,52 +634,63 @@ const MainView = () => {
           <p className={twMerge("text-xs invisible", isRecording && "visible")}>
             {formatTime(time)}
           </p>
-          <div
-            className={twMerge(
-              "relative w-16 h-16 flex  justify-center items-center cursor-pointer",
-              (isPlayingAudio || isLoading) && "pointer-events-none opacity-50"
+          <div className="flex">
+            {isPlayingAudio && (
+              <Button
+                className="absolute top-0 left-1/2 -translate-y-1/2 -translate-x-1/2"
+                onClick={() => setIsStopAudio(true)}
+              >
+                Stop Audio
+              </Button>
             )}
-            onClick={isRecording ? stopRecording : startRecording}
-          >
-            <svg
-              className="absolute top-0 left-0 w-full h-full"
-              viewBox="0 0 36 36"
+            <div
+              className={twMerge(
+                "relative w-16 h-16 flex  justify-center items-center cursor-pointer",
+                (isPlayingAudio || isLoading) &&
+                  "pointer-events-none opacity-50"
+              )}
+              onClick={isRecording ? stopRecording : startRecording}
             >
-              {/* Static White Border */}
-              <circle
-                className="stroke-foreground/50"
-                strokeWidth="1.5"
-                fill="transparent"
-                r={radius}
-                cx="18"
-                cy="18"
-              />
-              {/* Animated Stroke */}
-              {isRecording && (
+              <svg
+                className="absolute top-0 left-0 w-full h-full"
+                viewBox="0 0 36 36"
+              >
+                {/* Static White Border */}
                 <circle
-                  className="stroke-red-500 -translate-y-1/2"
+                  className="stroke-foreground/50"
                   strokeWidth="1.5"
                   fill="transparent"
                   r={radius}
                   cx="18"
                   cy="18"
-                  strokeDasharray={circumference}
-                  strokeDashoffset={dashOffset}
-                  style={{
-                    transition: "stroke-dashoffset 1s linear", // Animate stroke
-                    transform: "rotate(-90deg)", // Rotate to start from the top
-                    transformOrigin: "50% 50%", // Set the rotation center
-                  }}
                 />
-              )}
-            </svg>
+                {/* Animated Stroke */}
+                {isRecording && (
+                  <circle
+                    className="stroke-red-500 -translate-y-1/2"
+                    strokeWidth="1.5"
+                    fill="transparent"
+                    r={radius}
+                    cx="18"
+                    cy="18"
+                    strokeDasharray={circumference}
+                    strokeDashoffset={dashOffset}
+                    style={{
+                      transition: "stroke-dashoffset 1s linear", // Animate stroke
+                      transform: "rotate(-90deg)", // Rotate to start from the top
+                      transformOrigin: "50% 50%", // Set the rotation center
+                    }}
+                  />
+                )}
+              </svg>
 
-            <div
-              className={twMerge(
-                "w-9 h-9 rounded-full bg-foreground transition-all duration-300 ease-linear",
-                isRecording && "w-6 h-6 rounded-sm bg-red-500"
-              )}
-            />
+              <div
+                className={twMerge(
+                  "w-9 h-9 rounded-full bg-foreground transition-all duration-300 ease-linear",
+                  isRecording && "w-6 h-6 rounded-sm bg-red-500"
+                )}
+              />
+            </div>
           </div>
 
           <span className="hidden md:block text-xs">
@@ -700,7 +733,7 @@ const MainView = () => {
           </div>
         </div>
 
-        <div className="absolute left-0 w-[300px] max-w-[300px] bottom-16 hidden lg:block">
+        <div className="absolute left-0 w-[300px] max-w-[300px] bottom-14 hidden lg:block">
           <div
             className={twMerge(
               "p-4 border border-border rounded-lg mb-2 -left-80 invisible transition-all duration-500 relative",
