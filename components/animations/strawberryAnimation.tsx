@@ -100,7 +100,7 @@ const StrawberryAnimation = ({
               }}
             ></div>
             <div
-              className="mouth-test flex-shrink-0"
+              className="mouth-straw flex-shrink-0"
               style={
                 {
                   scale: `${newHeight}`,
