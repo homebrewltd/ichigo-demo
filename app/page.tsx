@@ -700,7 +700,7 @@ const MainView = () => {
           </div>
         </div>
 
-        <div className="absolute left-0 w-[300px] max-w-[300px] bottom-16 hidden lg:block">
+        <div className="absolute left-0 w-[300px] max-w-[300px] bottom-14 hidden lg:block">
           <div
             className={twMerge(
               "p-4 border border-border rounded-lg mb-2 -left-80 invisible transition-all duration-500 relative",
