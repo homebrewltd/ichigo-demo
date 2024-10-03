@@ -23,6 +23,7 @@ import { atomWithStorage } from "jotai/utils";
 import { useAtom } from "jotai/react";
 import AudioSelector from "@/components/ui/audioSelector";
 import { Button } from "@/components/ui/button";
+import { ModalPermissionDenied } from "@/components/ui/modalPemissionDenied";
 
 const audioVisualizerAtom = atomWithStorage("audioVisualizer", "strawberry");
 
@@ -64,6 +65,7 @@ const MainView = () => {
   const maxTime = 15;
   const [time, setTime] = useState(0);
   const [isStopAudio, setIsStopAudio] = useState(false);
+  const [permission, setPermission] = useState<PermissionState>(); // Microphone permission state
 
   const [selectedAudioVisualizer, setSelectedAudioVisualizer] =
     useAtom(audioVisualizerAtom);
@@ -88,6 +90,26 @@ const MainView = () => {
   const radius = 16; // Circle radius
   const circumference = 2 * Math.PI * radius; // Circumference of the circle
   const dashOffset = circumference - (time / (maxTime - 1)) * circumference;
+
+  useEffect(() => {
+    const checkMicrophonePermission = async () => {
+      try {
+        const micPermission = await navigator.permissions.query({
+          name: "microphone" as PermissionName,
+        });
+        setPermission(micPermission.state as PermissionState);
+
+        // Watch for permission changes
+        micPermission.onchange = () => {
+          setPermission(micPermission.state as PermissionState);
+        };
+      } catch (error) {
+        console.error("Error checking microphone permission", error);
+      }
+    };
+
+    checkMicrophonePermission();
+  }, []);
 
   // Update the timer every second while recording
   useEffect(() => {
@@ -488,6 +510,7 @@ const MainView = () => {
 
   return (
     <main className="px-8 flex flex-col w-full h-svh overflow-hidden">
+      {permission === "denied" && <ModalPermissionDenied />}
       <div className="flex-shrink-0">
         <Navbar />
       </div>
@@ -733,24 +756,26 @@ const MainView = () => {
           </div>
         </div>
 
-        <div className="absolute left-0 w-[300px] max-w-[300px] bottom-14 hidden lg:block">
-          <div
-            className={twMerge(
-              "p-4 border border-border rounded-lg mb-2 -left-80 invisible transition-all duration-500 relative",
-              isSettingVisible && "visible opacity-1 left-0"
-            )}
-          >
-            <AudioSelector />
+        {permission === "granted" && (
+          <div className="absolute left-0 w-[300px] max-w-[300px] bottom-14 hidden lg:block">
+            <div
+              className={twMerge(
+                "p-4 border border-border rounded-lg mb-2 -left-80 invisible transition-all duration-500 relative",
+                isSettingVisible && "visible opacity-1 left-0"
+              )}
+            >
+              <AudioSelector />
+            </div>
+            <IoSettingsSharp
+              size={28}
+              onClick={() => setIsSettingVisible(!isSettingVisible)}
+              className={twMerge(
+                "cursor-pointer",
+                isSettingVisible && "dark:text-blue-300 text-blue-700 "
+              )}
+            />
           </div>
-          <IoSettingsSharp
-            size={28}
-            onClick={() => setIsSettingVisible(!isSettingVisible)}
-            className={twMerge(
-              "cursor-pointer",
-              isSettingVisible && "dark:text-blue-300 text-blue-700 "
-            )}
-          />
-        </div>
+        )}
       </div>
     </main>
   );
