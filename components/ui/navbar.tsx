@@ -11,7 +11,7 @@ const Navbar = () => {
     <nav className="h-20 flex justify-between items-center">
       <div className="flex gap-2">
         <Logo />
-        <span className="font-medium">Ichigo イチゴ</span>
+        <span className="font-medium">Ichigo</span>
       </div>
       <RealtimeTracker />
       <div className="flex gap-4 text-foreground items-center">

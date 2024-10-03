@@ -24,6 +24,7 @@ import { useAtom } from "jotai/react";
 import AudioSelector from "@/components/ui/audioSelector";
 import { Button } from "@/components/ui/button";
 import { ModalPermissionDenied } from "@/components/ui/modalPemissionDenied";
+import VertexAnimation from "@/components/animations/vertexAnimnation";
 
 const audioVisualizerAtom = atomWithStorage("audioVisualizer", "strawberry");
 
@@ -35,6 +36,10 @@ const audioVisualizerList = [
   {
     id: "gradient",
     display: "🖲️",
+  },
+  {
+    id: "vertex",
+    display: "🌐",
   },
 ];
 
@@ -516,7 +521,7 @@ const MainView = () => {
       </div>
 
       <div className="h-full bg-background flex justify-center items-center relative">
-        <div className="absolute top-10 left-0 flex gap-2">
+        <div className="absolute top-10 left-0 flex gap-2 z-20">
           {audioVisualizerList.map((item, i) => {
             const isActive = selectedAudioVisualizer === item.id;
             return (
@@ -540,6 +545,9 @@ const MainView = () => {
           <Skeleton className="h-[300px] w-[300px] rounded-full" />
         ) : (
           <>
+            {selectedAudioVisualizer === "vertex" && (
+              <VertexAnimation frequency={frequency + 20} />
+            )}
             {selectedAudioVisualizer === "gradient" && (
               <GradientAnimtion frequency={frequency} isLoading={isLoading} />
             )}
