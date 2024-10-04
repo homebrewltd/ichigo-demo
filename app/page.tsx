@@ -49,13 +49,18 @@ const audioVisualizerList = [
 ];
 
 const MainView = () => {
+  interface AudioItemObj {
+    url: string;
+    isPlayed: boolean;
+    id: number;
+  }
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [isChatVisible, setIsChatVisible] = useState(false);
   const [isSettingVisible, setIsSettingVisible] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [frequency, setFrequency] = useState<number>(0);
-  const audioURL = useRef<string[]>([]);
+  const audioURL = useRef<AudioItemObj[]>([]);
   const audioURLIndex = useRef(-1);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -63,6 +68,7 @@ const MainView = () => {
   const audioAnalyser = useRef<THREE.AudioAnalyser | null>(null);
   const currentText = useRef("");
   const currentCount = useRef(0);
+  const textIndex = useRef(0);
   const lastMsg = useRef("");
   const checkpoint = useRef(10);
   let audioContext: AudioContext;
@@ -90,7 +96,7 @@ const MainView = () => {
   } = useChat({
     keepLastMessageOnError: true,
     onFinish(message) {
-      handleTTS(message.id, currentText.current);
+      handleTTS(message.id, currentText.current, textIndex.current);
       console.debug("send: ", currentText.current);
     },
   });
@@ -174,7 +180,8 @@ const MainView = () => {
       currentText.current = currentText.current + newWord;
     } else if (currentCount.current < 60 && punctuation.includes(newWord)) {
       console.debug("send first: ", currentText.current);
-      handleTTS(lastMessage.id, currentText.current);
+      handleTTS(lastMessage.id, currentText.current, textIndex.current);
+      textIndex.current += 1;
       checkpoint.current = 60;
       currentText.current = ""; // in case of punctuation, reset the text
       currentCount.current = 0;
@@ -183,7 +190,8 @@ const MainView = () => {
       currentText.current = currentText.current + newWord;
     } else {
       console.debug("send: ", currentText.current);
-      handleTTS(lastMessage.id, currentText.current);
+      handleTTS(lastMessage.id, currentText.current, textIndex.current);
+      textIndex.current += 1;
       checkpoint.current = chunkSize === 60 ? 60 : 400;
       currentText.current = newWord;
       currentCount.current = 0;
@@ -196,7 +204,7 @@ const MainView = () => {
   // Send message when user stop record
   useEffect(() => {
     const preventDefault = {
-      preventDefault: () => {},
+      preventDefault: () => { },
     } as React.FormEvent;
 
     if (isInputVoice || time === maxTime) {
@@ -299,13 +307,13 @@ const MainView = () => {
         }
       };
 
-      load(audioURL.current[audioURLIndex.current], {
+      load(audioURL.current[audioURLIndex.current].url, {
         autoplay: true,
         format: "wav",
 
         onplay: () => {
           audioLoader.load(
-            audioURL.current[audioURLIndex.current],
+            audioURL.current[audioURLIndex.current].url,
             (buffer) => {
               audio.setBuffer(buffer);
               audioAnalyser.current = new THREE.AudioAnalyser(audio, 32);
@@ -342,7 +350,7 @@ const MainView = () => {
   };
 
   // Handle get TTS API
-  const handleTTS = async (messageId: string, text: string) => {
+  const handleTTS = async (messageId: string, text: string, text_index: number) => {
     if (!text) return;
     if (isStopAudio) return;
 
@@ -362,7 +370,8 @@ const MainView = () => {
       });
       const audioBlob = await response.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
-      audioURL.current.push(audioUrl);
+      const audioObj: AudioItemObj = { url: audioUrl, id: text_index, isPlayed: false };
+      audioURL.current.push(audioObj);
       console.debug("Pushing: ", audioURL.current.length, audioUrl);
       if (audioURLIndex.current === -1) {
         console.debug("Set Audio Index: ", 0);
@@ -382,6 +391,7 @@ const MainView = () => {
     currentCount.current = 0;
     lastMsg.current = "";
     checkpoint.current = 10;
+    textIndex.current = 0;
     audioURL.current = [];
     audioURLIndex.current = -1;
     setIsStopAudio(false);
@@ -511,6 +521,7 @@ const MainView = () => {
       currentCount.current = 0;
       lastMsg.current = "";
       checkpoint.current = 10;
+      textIndex.current = 0;
       audioURL.current = [];
       audioURLIndex.current = -1;
       stop();
@@ -535,8 +546,8 @@ const MainView = () => {
                 className={twMerge(
                   "w-10 h-10 border border-border flex items-center justify-center rounded-lg cursor-pointer",
                   os !== "undetermined" &&
-                    isActive &&
-                    "border-2 border-blue-600"
+                  isActive &&
+                  "border-2 border-blue-600"
                 )}
                 onClick={() => setSelectedAudioVisualizer(item.id)}
               >
@@ -692,7 +703,7 @@ const MainView = () => {
               className={twMerge(
                 "relative w-16 h-16 flex  justify-center items-center cursor-pointer",
                 (isPlayingAudio || isLoading) &&
-                  "pointer-events-none opacity-50"
+                "pointer-events-none opacity-50"
               )}
               onClick={isRecording ? stopRecording : startRecording}
             >
@@ -745,7 +756,7 @@ const MainView = () => {
               <span
                 className={twMerge(
                   (isPlayingAudio || isLoading) &&
-                    "pointer-events-none opacity-50"
+                  "pointer-events-none opacity-50"
                 )}
               >
                 Shift + Space
