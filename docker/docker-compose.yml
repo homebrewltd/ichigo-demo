@@ -39,7 +39,7 @@ services:
   tabbyapi:
     container_name: tabbyapi
     build:
-      context: ./tabbyAPI
+      context: ./tabbyAPI-personal-fork
       dockerfile: ./docker/Dockerfile
       args:
         DO_PULL: "true"
