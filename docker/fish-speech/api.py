@@ -191,7 +191,7 @@ def inference(req: ServeTTSRequest):
     if idstr is not None:
         ref_folder = Path("references") / idstr
         ref_folder.mkdir(parents=True, exist_ok=True)
-        ref_audios = ["references/ref.wav"]
+        ref_audios = ["references/ref.mp3"]
         # ref_audios = list_files(
         #     ref_folder, AUDIO_EXTENSIONS, recursive=True, sort=False
         # )
@@ -361,6 +361,21 @@ async def api_health():
 def parse_args():
     parser = ArgumentParser()
     parser.add_argument(
+        "default",
+        type=str,
+        default="api:app",
+    )
+    parser.add_argument(
+        "--host",
+        type=str,
+        default="0.0.0.0",
+    )
+    parser.add_argument(
+        "--port",
+        type=str,
+        default="22311",
+    )
+    parser.add_argument(
         "--llama-checkpoint-path",
         type=str,
         default="checkpoints/fish-speech-1.4",
@@ -373,10 +388,10 @@ def parse_args():
     parser.add_argument("--decoder-config-name", type=str, default="firefly_gan_vq")
     parser.add_argument("--device", type=str, default="cuda")
     parser.add_argument("--half", action="store_true")
-    parser.add_argument("--compile", action="store_true")
+    parser.add_argument("--compile", type=bool, default=True)
     parser.add_argument("--max-text-length", type=int, default=0)
-    parser.add_argument("--listen", type=str, default="127.0.0.1:8080")
-    parser.add_argument("--workers", type=int, default=1)
+    parser.add_argument("--listen", type=str, default="0.0.0.0:22311")
+    parser.add_argument("--workers", type=int, default=2)
 
     return parser.parse_args()
 
@@ -400,42 +415,30 @@ class MsgPackRequest(HttpRequest):
         )
 
 
-app = Kui(
-    routes=routes + openapi[1:],  # Remove the default route
-    exception_handlers={
-        HTTPException: http_execption_handler,
-        Exception: other_exception_handler,
-    },
-    factory_class=FactoryClass(http=MsgPackRequest),
-    cors_config={},
-)
 
 
-if __name__ == "__main__":
+    # Initialize resources here
+    
+args = parse_args()
+args.precision = torch.half if args.half else torch.bfloat16
 
-    import uvicorn
-
-    args = parse_args()
-    args.precision = torch.half if args.half else torch.bfloat16
-
-    logger.info("Loading Llama model...")
-    llama_queue = launch_thread_safe_queue(
+logger.info("Loading Llama model...")
+llama_queue = launch_thread_safe_queue(
         checkpoint_path=args.llama_checkpoint_path,
         device=args.device,
         precision=args.precision,
-        compile=args.compile,
+        compile=True
     )
-    logger.info("Llama model loaded, loading VQ-GAN model...")
+logger.info("Llama model loaded, loading VQ-GAN model...")
 
-    decoder_model = load_decoder_model(
+decoder_model = load_decoder_model(
         config_name=args.decoder_config_name,
         checkpoint_path=args.decoder_checkpoint_path,
         device=args.device,
     )
 
-    logger.info("VQ-GAN model loaded, warming up...")
-
-    # Dry run to check if the model is loaded correctly and avoid the first-time latency
+logger.info("VQ-GAN model loaded, warming up...")
+def warmup(app: Kui):
     list(
         inference(
             ServeTTSRequest(
@@ -452,7 +455,21 @@ if __name__ == "__main__":
             )
         )
     )
+logger.info(f"Warming up done, starting server at http://{args.listen}")
+app = Kui(
+    on_startup=[warmup],
+    routes=routes + openapi[1:],  # Remove the default route
+    exception_handlers={
+        HTTPException: http_execption_handler,
+        Exception: other_exception_handler,
+    },
+    factory_class=FactoryClass(http=MsgPackRequest),
+    cors_config={},
+)
+if __name__ == "__main__":
 
-    logger.info(f"Warming up done, starting server at http://{args.listen}")
+    import uvicorn
+    # Dry run to check if the model is loaded correctly and avoid the first-time latency
+
     host, port = args.listen.split(":")
-    uvicorn.run(app, host=host, port=int(port), workers=args.workers, log_level="info")
+    uvicorn.run("api:app", host=host, port=int(port), workers=1, log_level="info")
