@@ -1,4 +1,5 @@
 "use client";
+import PQueue from "p-queue";
 
 import * as THREE from "three";
 import React, { useCallback, useEffect, useRef, useState } from "react";
@@ -48,6 +49,8 @@ const audioVisualizerList = [
   },
 ];
 
+const queue = new PQueue({ concurrency: 1 });
+
 const MainView = () => {
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [isChatVisible, setIsChatVisible] = useState(false);
@@ -80,6 +83,28 @@ const MainView = () => {
   const [selectedAudioVisualizer, setSelectedAudioVisualizer] =
     useAtom(audioVisualizerAtom);
 
+  const punctuation = [
+    ".",
+    ",",
+    "!",
+    "?",
+    ":",
+    ";",
+    '"',
+    "'",
+    "(",
+    ")",
+    "[",
+    "]",
+    "{",
+    "}",
+    "-",
+    "--",
+    "...",
+    "/",
+    "\\",
+  ];
+
   const {
     input,
     isLoading,
@@ -90,7 +115,7 @@ const MainView = () => {
   } = useChat({
     keepLastMessageOnError: true,
     onFinish(message) {
-      handleTTS(message.id, currentText.current);
+      addToFetchQueue(message.id, currentText.current);
       console.debug("send: ", currentText.current);
     },
   });
@@ -148,33 +173,13 @@ const MainView = () => {
       : lastMessage?.content;
 
     const chunkSize = checkpoint.current ?? 400;
-    const punctuation = [
-      ".",
-      ",",
-      "!",
-      "?",
-      ":",
-      ";",
-      '"',
-      "'",
-      "(",
-      ")",
-      "[",
-      "]",
-      "{",
-      "}",
-      "-",
-      "--",
-      "...",
-      "/",
-      "\\",
-    ];
+
     // console.debug("send first: ", newWord, punctuation.includes(newWord),currentCount.current , checkpoint.current);
     if (currentCount.current < chunkSize) {
       currentText.current = currentText.current + newWord;
     } else if (currentCount.current < 60 && punctuation.includes(newWord)) {
       console.debug("send first: ", currentText.current);
-      handleTTS(lastMessage.id, currentText.current);
+      addToFetchQueue(lastMessage.id, currentText.current);
       checkpoint.current = 60;
       currentText.current = ""; // in case of punctuation, reset the text
       currentCount.current = 0;
@@ -183,7 +188,7 @@ const MainView = () => {
       currentText.current = currentText.current + newWord;
     } else {
       console.debug("send: ", currentText.current);
-      handleTTS(lastMessage.id, currentText.current);
+      addToFetchQueue(lastMessage.id, currentText.current);
       checkpoint.current = chunkSize === 60 ? 60 : 400;
       currentText.current = newWord;
       currentCount.current = 0;
@@ -342,10 +347,44 @@ const MainView = () => {
   };
 
   // Handle get TTS API
-  const handleTTS = async (messageId: string, text: string) => {
-    if (!text) return;
-    if (isStopAudio) return;
+  // const handleTTS = async (messageId: string, text: string) => {
+  //   if (punctuation.includes(text)) return;
+  //   if (!text) return;
+  //   if (isStopAudio) return;
 
+  //   try {
+  //     const response = await fetch("/api/tts", {
+  //       method: "POST",
+  //       body: JSON.stringify({
+  //         text: text,
+  //         reference_id: messageId,
+  //         normalize: true,
+  //         format: "wav",
+  //         latency: "balanced",
+  //         max_new_tokens: 2048,
+  //         chunk_length: 200,
+  //         repetition_penalty: 1.5,
+  //       }),
+  //     });
+  //     const audioBlob = await response.blob();
+  //     const audioUrl = URL.createObjectURL(audioBlob);
+  //     audioURL.current.push(audioUrl);
+  //     console.debug("Pushing: ", audioURL.current.length, audioUrl);
+  //     if (audioURLIndex.current === -1) {
+  //       console.debug("Set Audio Index: ", 0);
+  //       audioURLIndex.current = 0;
+  //       playAudio();
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching TTS audio:", error);
+  //   }
+  // };
+
+  const addToFetchQueue = (messageId: string, text: string) => {
+    queue.add(() => fetchTTS(messageId, text));
+  };
+
+  const fetchTTS = async (messageId: string, text: string) => {
     try {
       const response = await fetch("/api/tts", {
         method: "POST",
@@ -360,10 +399,13 @@ const MainView = () => {
           repetition_penalty: 1.5,
         }),
       });
+
       const audioBlob = await response.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
       audioURL.current.push(audioUrl);
+
       console.debug("Pushing: ", audioURL.current.length, audioUrl);
+
       if (audioURLIndex.current === -1) {
         console.debug("Set Audio Index: ", 0);
         audioURLIndex.current = 0;
@@ -373,7 +415,6 @@ const MainView = () => {
       console.error("Error fetching TTS audio:", error);
     }
   };
-
   // Handle submit
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
