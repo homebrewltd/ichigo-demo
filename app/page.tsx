@@ -25,6 +25,7 @@ import AudioSelector from "@/components/ui/audioSelector";
 import { Button } from "@/components/ui/button";
 import { ModalPermissionDenied } from "@/components/ui/modalPemissionDenied";
 import VertexAnimation from "@/components/animations/vertexAnimnation";
+import OldStrawberryAnimation from "@/components/animations/oldStraberry";
 
 const audioVisualizerAtom = atomWithStorage("audioVisualizer", "strawberry");
 
@@ -40,6 +41,10 @@ const audioVisualizerList = [
   {
     id: "vertex",
     display: "🌐",
+  },
+  {
+    id: "old-straw",
+    display: "🍓",
   },
 ];
 
@@ -555,6 +560,13 @@ const MainView = () => {
             )}
             {selectedAudioVisualizer === "strawberry" && (
               <StrawberryAnimation
+                frequency={frequency}
+                isLoading={isLoading}
+                isPlayingAudio={isPlayingAudio}
+              />
+            )}
+            {selectedAudioVisualizer === "old-straw" && (
+              <OldStrawberryAnimation
                 frequency={frequency}
                 isLoading={isLoading}
                 isPlayingAudio={isPlayingAudio}
