@@ -1,0 +1,3 @@
+[submodule "docker/tabbyAPI-personal-fork"]
+	path = docker/tabbyAPI-personal-fork
+	url = https://github.com/tikikun/tabbyAPI-personal-fork
