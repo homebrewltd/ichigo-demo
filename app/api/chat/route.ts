@@ -32,6 +32,7 @@ export async function POST(req: Request) {
       apiKey: process.env.OPENAI_API_KEY || "",
       baseURL: process.env.OPENAI_BASE_URL,
     }).languageModel(process.env.MODEL_NAME || "alan-gift"),
+    maxTokens: 800,
     messages: convertToCoreMessages(finalMessages),
     async onFinish({ text, toolCalls, toolResults, usage, finishReason }) {
       // implement your own logic here, e.g. for storing messages
