@@ -223,7 +223,7 @@ const MainView = () => {
       setIsChatVisible(!isChatVisible);
     }
 
-    if (event.code === "KeyE" && prefix && event.shiftKey) {
+    if (event.code === "Space" && event.shiftKey) {
       if (isLoading) return null;
       if (isPlayingAudio) return null;
       if (isRecording) {
@@ -546,7 +546,9 @@ const MainView = () => {
         ) : (
           <>
             {selectedAudioVisualizer === "vertex" && (
-              <VertexAnimation frequency={frequency + 20} />
+              <div className="relative top-[50px] lg:top-0 w-full h-full">
+                <VertexAnimation frequency={frequency + 20} />
+              </div>
             )}
             {selectedAudioVisualizer === "gradient" && (
               <GradientAnimtion frequency={frequency} isLoading={isLoading} />
@@ -563,7 +565,7 @@ const MainView = () => {
 
         <div
           className={twMerge(
-            "invisible flex flex-col overflow-x-hidden justify-between opacity-0 -right-80 w-full md:w-[400px] border border-border rounded-xl h-[calc(100%-24px)] absolute top-6 bg-background duration-500 transition-[transform, border-radius]",
+            "invisible flex flex-col overflow-x-hidden justify-between opacity-0 -right-80 w-full md:w-[400px] border border-border rounded-xl h-[calc(100%-24px)] absolute top-6 bg-background duration-500 transition-[transform, border-radius] z-40",
             isChatVisible && "visible opacity-1 right-0"
           )}
         >
@@ -641,7 +643,7 @@ const MainView = () => {
         </div>
       </div>
 
-      <div className="flex flex-shrink-0 justify-center items-center h-48 relative w-full ">
+      <div className="flex flex-shrink-0 justify-center items-center h-32 lg:h-48 relative w-full ">
         <div className="flex flex-col justify-center items-center gap-4 ">
           <div
             className={twMerge(
@@ -734,7 +736,7 @@ const MainView = () => {
                     "pointer-events-none opacity-50"
                 )}
               >
-                {isMac ? "⌘" : "Ctrl"} + Shift + E
+                Shift + Space
               </span>
             )}
           </span>
@@ -742,7 +744,7 @@ const MainView = () => {
 
         <div
           className={twMerge(
-            "absolute right-0 bottom-16 transition-colors duration-500"
+            "absolute right-0 bottom-8 lg:bottom-16 transition-colors duration-500"
           )}
         >
           <div className="flex gap-4 items-center">
