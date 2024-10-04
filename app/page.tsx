@@ -719,7 +719,7 @@ const MainView = () => {
 
               <div
                 className={twMerge(
-                  "w-9 h-9 rounded-full bg-foreground transition-all duration-300 ease-linear",
+                  "w-9 h-9 rounded-full bg-red-500 transition-all duration-300 ease-linear",
                   isRecording && "w-6 h-6 rounded-sm bg-red-500"
                 )}
               />
