@@ -190,7 +190,7 @@ def inference(req: ServeTTSRequest):
     if idstr is not None:
         ref_folder = Path("references") / idstr
         ref_folder.mkdir(parents=True, exist_ok=True)
-        ref_audios = ["references/ref.wav"]
+        ref_audios = ["references/ref.mp3"]
         # ref_audios = list_files(
         #     ref_folder, AUDIO_EXTENSIONS, recursive=True, sort=False
         # )
