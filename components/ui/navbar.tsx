@@ -15,7 +15,7 @@ const Navbar = () => {
       </div>
       <RealtimeTracker />
       <div className=" gap-4 text-foreground items-center hidden md:flex">
-        <a href="https://github.com/janhq/jan" target="_blank">
+        <a href="https://github.com/homebrewltd/ichigo" target="_blank">
           <FaGithub size={20} />
         </a>
         <a href="https://discord.com/invite/FTk2MvZwJH" target="_blank">
