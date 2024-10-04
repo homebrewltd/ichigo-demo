@@ -1,4 +1,4 @@
-$rotate-radius: 30px;
+$rotate-radius: 10px;
 
 @keyframes bounce {
   0%,
@@ -15,32 +15,32 @@ $rotate-radius: 30px;
 @keyframes rainbow {
   0% {
     transform: rotate(0deg);
-    box-shadow: 0 0 100px 10px transparent,
-      inset $rotate-radius 0 100px 10px rgba(222, 102, 228, 0.5);
+    box-shadow: 0 0 80px 6px transparent,
+      inset $rotate-radius 0 80px 6px rgba(222, 102, 228, 0.5);
   }
 
   25% {
     transform: rotate(90deg);
-    box-shadow: 0 0 100px 10px transparent,
-      inset $rotate-radius 0 100px 10px rgba(52, 206, 170, 1);
+    box-shadow: 0 0 80px 6px transparent,
+      inset $rotate-radius 0 80px 6px rgba(52, 206, 170, 1);
   }
 
   50% {
     transform: rotate(180deg);
-    box-shadow: 0 0 100px 10px transparent,
-      inset $rotate-radius 0 100px 10px rgba(25, 179, 245, 0.8);
+    box-shadow: 0 0 80px 6px transparent,
+      inset $rotate-radius 0 80px 6px rgba(25, 179, 245, 0.8);
   }
 
   75% {
     transform: rotate(270deg);
-    box-shadow: 0 0 100px 10px transparent,
-      inset $rotate-radius 0 100px 10px rgba(61, 82, 172, 1);
+    box-shadow: 0 0 80px 6px transparent,
+      inset $rotate-radius 0 80px 6px rgba(61, 82, 172, 1);
   }
 
   100% {
     transform: rotate(360deg);
-    box-shadow: 0 0 100px 10px transparent,
-      inset $rotate-radius 0 100px 10px rgba(228, 102, 102, 0.8);
+    box-shadow: 0 0 80px 6px transparent,
+      inset $rotate-radius 0 80px 6px rgba(228, 102, 102, 0.8);
   }
 }
 

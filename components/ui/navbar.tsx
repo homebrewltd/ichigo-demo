@@ -14,7 +14,7 @@ const Navbar = () => {
         <span className="font-medium">Ichigo</span>
       </div>
       <RealtimeTracker />
-      <div className="flex gap-4 text-foreground items-center">
+      <div className=" gap-4 text-foreground items-center hidden md:flex">
         <a href="https://github.com/janhq/jan" target="_blank">
           <FaGithub size={20} />
         </a>

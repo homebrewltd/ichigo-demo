@@ -30,7 +30,7 @@ const RealtimeTracker: React.FC = () => {
 
   return (
     <div className="flex items-center gap-2">
-      <TooltipProvider>
+      <TooltipProvider delayDuration={0}>
         {isShowInfo && (
           <Tooltip>
             <TooltipTrigger>

@@ -7,13 +7,13 @@ interface Props {
 }
 
 const GradientAnimtion = ({ frequency, isLoading }: Props) => {
-  const defaultSize = 400;
+  const defaultSize = 300;
   const size = Math.max(defaultSize + frequency / 2, defaultSize);
 
   return (
     <div
       className={twMerge(
-        "border-2 border-foreground/20 rounded-full dark:bg-neutral-950 bg-neutral-800 relative z-10 shadow-sm",
+        "rounded-full dark:bg-neutral-950 bg-neutral-800 relative z-10 shadow-sm top-[50px] lg:top-0",
         isLoading && "bounce"
       )}
       style={{
