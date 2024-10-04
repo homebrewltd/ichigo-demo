@@ -24,8 +24,8 @@ const StrawberryAnimation = ({
     <>
       <div
         className={twMerge(
-          "centerwrap-straw relative scale-75 top-[40px] lg:top-0 lg:scale-100",
-          isLoading && "bounce"
+          "centerwrap-straw relative scale-75 top-[40px] lg:top-0 lg:scale-100"
+          // isLoading && "bounce"
         )}
       >
         <svg
