@@ -29,8 +29,10 @@
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
   }
+
+  [data-theme="dark"],
   .dark {
-    --background: 240 10% 3.9%;
+    --background: 240 10% 10%;
     --foreground: 0 0% 98%;
     --card: 240 10% 3.9%;
     --card-foreground: 0 0% 98%;
@@ -56,6 +58,7 @@
     --chart-5: 340 75% 55%;
   }
 }
+
 @layer base {
   * {
     @apply border-border;
@@ -90,3 +93,7 @@
     margin: 0;
   }
 }
+
+@import "./gradientAnimation.scss";
+@import "./strawberryAnimation.scss";
+@import "./oldStrawberryAnimation.scss";
