@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
         normalize: true,
         format: "wav",
         latency: "balanced",
-        max_new_tokens: 2048,
+        max_new_tokens: 4096,
         chunk_length: 200,
         repetition_penalty: 1.5,
       }),

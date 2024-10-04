@@ -1,0 +1,153 @@
+/* Hopefully i will clean this messed up code soon */
+
+@mixin dot-bg($dotcolor, $bgcolor, $dotpercent, $bgsize, $offset: false) {
+  background: radial-gradient(
+      $dotcolor $dotpercent,
+      transparent $dotpercent + 5
+    ),
+    radial-gradient($dotcolor $dotpercent, transparent $dotpercent + 5),
+    $bgcolor;
+  @if $offset == true {
+    background-position: 0 0, $bgsize/2 $bgsize/2;
+  } @else {
+    background-position: 0 0, $bgsize $bgsize;
+  }
+  background-size: $bgsize $bgsize;
+}
+
+.centerwrap-straw-old {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-top: -150px;
+  margin-left: -150px;
+}
+
+.face-straw-old {
+  height: 300px;
+  width: 300px;
+  border-radius: 300px;
+  border-bottom-right-radius: 80px;
+  rotate: 45deg;
+  border: 10px solid #6d1f1e;
+  @include dot-bg(#ffcd83, #ff4a47, 10%, 24px);
+}
+
+.rotator-straw-old {
+  display: block;
+  margin-left: 30px;
+  margin-top: 30px;
+  padding-top: 100px;
+  width: 107px;
+  transform: rotate(-50deg);
+
+  &.run-animate {
+    transform-origin: center center;
+    animation-name: rotator-straw-old;
+    animation-duration: 4s;
+    animation-iteration-count: infinite;
+  }
+}
+
+.eyes-straw-old:before,
+.eyes-straw-old:after {
+  height: 26px;
+  width: 16px;
+  border-radius: 26px;
+  display: inline-block;
+  content: " ";
+  background-color: black;
+  -webkit-animation-name: eyes_resize;
+  animation-name: eyes_resize;
+  -webkit-animation-duration: 4s;
+  animation-duration: 4s;
+  -webkit-animation-iteration-count: infinite;
+  animation-iteration-count: infinite;
+  -webkit-transform: translate(-50%, 0%);
+  -ms-transform: translate(-50%, 0%);
+  transform: translate(-50%, 0%);
+  margin-left: 8px;
+}
+
+.eyes-straw-old:after {
+  position: absolute;
+  left: 91px;
+}
+
+@keyframes rotator-straw-old {
+  0% {
+    -webkit-transform: rotate(-50deg);
+    transform: rotate(-50deg);
+  }
+  30% {
+    -webkit-transform: rotate(-30deg);
+    transform: rotate(-30deg);
+  }
+  50% {
+    -webkit-transform: rotate(-50deg);
+    transform: rotate(-50deg);
+  }
+  75% {
+    -webkit-transform: rotate(-80deg);
+    transform: rotate(-80deg);
+  }
+  100% {
+    -webkit-transform: rotate(-50deg);
+    transform: rotate(-50deg);
+  }
+}
+
+@keyframes eyes_resize {
+  10% {
+    width: 26px;
+  }
+  35% {
+    width: 26px;
+  }
+  66% {
+    width: 16px;
+  }
+  100% {
+    width: 16px;
+  }
+}
+
+// @mixin dot-bg($dotcolor, $bgcolor, $dotpercent, $bgsize, $offset: false) {
+//   background: radial-gradient(
+//       $dotcolor $dotpercent,
+//       transparent $dotpercent + 5
+//     ),
+//     radial-gradient($dotcolor $dotpercent, transparent $dotpercent + 5),
+//     $bgcolor;
+//   @if $offset == true {
+//     background-position: 0 0, $bgsize/2 $bgsize/2;
+//   } @else {
+//     background-position: 0 0, $bgsize $bgsize;
+//   }
+//   background-size: $bgsize $bgsize;
+// }
+
+// .straw-pattern {
+//   align-items: center;
+//   border: 5px solid black;
+//   display: flex;
+//   height: 300px;
+//   justify-content: center;
+//   margin-bottom: 5px;
+
+//   &-1 {
+//     @include dot-bg(black, white, 15%, 7px);
+//   }
+//   &-2 {
+//     @include dot-bg(black, white, 20%, 30px);
+//   }
+//   &-3 {
+//     @include dot-bg(black, white, 30%, 100px);
+//   }
+//   &-4 {
+//     @include dot-bg(black, white, 15%, 20px, true);
+//   }
+//   &-5 {
+//     @include dot-bg(black, white, 30%, 100px, true);
+//   }
+// }
