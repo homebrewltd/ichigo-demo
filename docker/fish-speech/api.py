@@ -14,6 +14,7 @@ or send a letter to Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.
 For the full license text, please see:
 https://github.com/fishaudio/fish-speech/blob/main/LICENSE
 """
+
 import base64
 import io
 import json
