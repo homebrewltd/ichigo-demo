@@ -25,16 +25,17 @@ vq_model.ensure_whisper(device)
 @app.post("/tokenize")
 async def tokenize_audio(file: UploadFile = File(...)):
     # Save the uploaded file temporarily
-    with open("temp_audio.wav", "wb") as buffer:
-        buffer.write(await file.read())
-    wav, sr = torchaudio.load("temp_audio.wav")
+    # with open("temp_audio.wav", "wb") as buffer:
+    #     buffer.write(await file.read())
+    file_obj = await file.read()
+    wav, sr = torchaudio.load(file_obj)
     if sr != 16000:
         wav = torchaudio.functional.resample(wav, sr, 16000)
     with torch.no_grad():
         codes = vq_model.encode_audio(wav.to('cuda'))
         codes = codes[0].cpu().tolist()
     result = ''.join(f'<|sound_{num:04d}|>' for num in codes)
-    os.remove("temp_audio.wav")
+    # os.remove("temp_audio.wav")
     return JSONResponse(content={"model_name": "whisper-vq-stoks-v3-7lang-fixed.model"  , "tokens": f'<|sound_start|>{result}<|sound_end|>'})
 
 if __name__ == "__main__":

@@ -24,10 +24,11 @@ services:
     # network_mode: host
     volumes:
       - ./fish-speech/data/:/opt/fish-speech/references/ # Change me
-      - ./fish-speech/api.py:/opt/fish-speech/tools/api.py # Change me /opt/fish-speech
+      - ./fish-speech/api.py:/opt/fish-speech/api.py # Change me /opt/fish-speech
     ports:
       - "22311:22311"
-    command: [ "python", "-m", "tools.api", "--listen", "0.0.0.0:22311", "--llama-checkpoint-path", "checkpoints/fish-speech-1.4","--decoder-checkpoint-path","checkpoints/fish-speech-1.4/firefly-gan-vq-fsq-8x1024-21hz-generator.pth","--decoder-config-name","firefly_gan_vq","--compile" ]
+    command: uvicorn 'api:app' --workers 3 --host 0.0.0.0 --port 22311 
+    # [ "python", "-m", "tools.api", "--listen", "0.0.0.0:22311", "--llama-checkpoint-path", "checkpoints/fish-speech-1.4", "--decoder-checkpoint-path", "checkpoints/fish-speech-1.4/firefly-gan-vq-fsq-8x1024-21hz-generator.pth", "--decoder-config-name", "firefly_gan_vq", "--compile" ]
     deploy:
       resources:
         reservations:
@@ -56,4 +57,4 @@ services:
           devices:
             - driver: nvidia
               count: all
-              capabilities: [gpu]
+              capabilities: [ gpu ]
