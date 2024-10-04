@@ -223,7 +223,7 @@ const MainView = () => {
       setIsChatVisible(!isChatVisible);
     }
 
-    if (event.code === "KeyE" && prefix && event.shiftKey) {
+    if (event.code === "Space" && event.shiftKey) {
       if (isLoading) return null;
       if (isPlayingAudio) return null;
       if (isRecording) {
@@ -736,7 +736,7 @@ const MainView = () => {
                     "pointer-events-none opacity-50"
                 )}
               >
-                {isMac ? "⌘" : "Ctrl"} + Shift + E
+                Shift + Space
               </span>
             )}
           </span>
