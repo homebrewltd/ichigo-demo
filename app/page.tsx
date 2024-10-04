@@ -72,7 +72,7 @@ const MainView = () => {
   const prevScrollTop = useRef(0);
   const isUserManuallyScrollingUp = useRef(false);
   const waveBars = useRef<HTMLDivElement[]>([]);
-  const maxTime = 15;
+  const maxTime = 10;
   const [time, setTime] = useState(0);
   const [isStopAudio, setIsStopAudio] = useState(false);
   const [permission, setPermission] = useState<PermissionState>(); // Microphone permission state
