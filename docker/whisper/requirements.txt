@@ -17,3 +17,4 @@ torch==2.2.0
 torchaudio==2.2.0
 numpy==1.26.4
 fastapi
+uvicorn
