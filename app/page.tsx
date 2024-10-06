@@ -27,7 +27,7 @@ import { Button } from "@/components/ui/button";
 import { ModalPermissionDenied } from "@/components/ui/modalPemissionDenied";
 import VertexAnimation from "@/components/animations/vertexAnimnation";
 import OldStrawberryAnimation from "@/components/animations/oldStraberry";
-
+import { useLongPress } from "@uidotdev/usehooks";
 const audioVisualizerAtom = atomWithStorage("audioVisualizer", "old-straw");
 
 const audioVisualizerList = [
@@ -534,6 +534,13 @@ const MainView = () => {
     } catch (error) {}
   };
 
+  const longPressHandlers = useLongPress(startRecording, {
+    // onStart: (event) => console.log("Press started"),
+    onFinish: stopRecording,
+    // onCancel: (event) => console.log("Press cancelled"),
+    threshold: 500,
+  });
+
   return (
     <main className="px-8 flex flex-col w-full h-svh overflow-hidden">
       {permission === "denied" && <ModalPermissionDenied />}
@@ -712,12 +719,8 @@ const MainView = () => {
                   (isPlayingAudio || isLoading) &&
                     "pointer-events-none opacity-50"
                 )}
-                onClick={isRecording ? stopRecording : startRecording}
-                // onMouseDown={startRecording} // Start recording on press
-                // onMouseUp={stopRecording} // Stop recording on release
-                // onMouseLeave={stopRecording} // Stop if the user drags out of the button
-                // onTouchStart={startRecording} // For mobile: Start recording on touch
-                // onTouchEnd={stopRecording}
+                // onClick={isRecording ? stopRecording : startRecording}
+                {...longPressHandlers}
               >
                 <svg
                   className="absolute top-0 left-0 w-full h-full"
@@ -811,15 +814,18 @@ const MainView = () => {
         </div>
 
         {permission === "granted" && (
-          <div className="absolute left-0 w-[300px] max-w-[300px] bottom-8 lg:bottom-14">
-            <div
-              className={twMerge(
-                "p-4 border border-border rounded-lg mb-2 -left-80 invisible transition-all duration-500 relative bg-background",
-                isSettingVisible && "visible opacity-1 left-0"
-              )}
-            >
-              <AudioSelector />
-            </div>
+          <div
+            className={twMerge(
+              "fixed z-20 p-4 border border-border rounded-lg mb-2 -left-80 bottom-24 invisible transition-all duration-500 bg-background",
+              isSettingVisible && "visible opacity-1 left-0"
+            )}
+          >
+            <AudioSelector />
+          </div>
+        )}
+
+        {permission === "granted" && (
+          <div className="absolute left-0 bottom-4 lg:bottom-14 w-10 h-10">
             <IoSettingsSharp
               size={28}
               onClick={() => setIsSettingVisible(!isSettingVisible)}
