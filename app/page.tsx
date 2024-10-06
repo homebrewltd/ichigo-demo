@@ -28,7 +28,7 @@ import { ModalPermissionDenied } from "@/components/ui/modalPemissionDenied";
 import VertexAnimation from "@/components/animations/vertexAnimnation";
 import OldStrawberryAnimation from "@/components/animations/oldStraberry";
 
-const audioVisualizerAtom = atomWithStorage("audioVisualizer", "strawberry");
+const audioVisualizerAtom = atomWithStorage("audioVisualizer", "old-straw");
 
 const audioVisualizerList = [
   {
@@ -307,6 +307,7 @@ const MainView = () => {
       load(audioURL.current[audioURLIndex.current], {
         autoplay: true,
         format: "wav",
+        initialMute: true,
 
         onplay: () => {
           audioLoader.load(
@@ -345,40 +346,6 @@ const MainView = () => {
       });
     }
   };
-
-  // Handle get TTS API
-  // const handleTTS = async (messageId: string, text: string) => {
-  //   if (punctuation.includes(text)) return;
-  //   if (!text) return;
-  //   if (isStopAudio) return;
-
-  //   try {
-  //     const response = await fetch("/api/tts", {
-  //       method: "POST",
-  //       body: JSON.stringify({
-  //         text: text,
-  //         reference_id: messageId,
-  //         normalize: true,
-  //         format: "wav",
-  //         latency: "balanced",
-  //         max_new_tokens: 2048,
-  //         chunk_length: 200,
-  //         repetition_penalty: 1.5,
-  //       }),
-  //     });
-  //     const audioBlob = await response.blob();
-  //     const audioUrl = URL.createObjectURL(audioBlob);
-  //     audioURL.current.push(audioUrl);
-  //     console.debug("Pushing: ", audioURL.current.length, audioUrl);
-  //     if (audioURLIndex.current === -1) {
-  //       console.debug("Set Audio Index: ", 0);
-  //       audioURLIndex.current = 0;
-  //       playAudio();
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching TTS audio:", error);
-  //   }
-  // };
 
   const addToFetchQueue = (messageId: string, text: string) => {
     queue.add(() => fetchTTS(messageId, text));
@@ -559,9 +526,18 @@ const MainView = () => {
     }
   }, [isStopAudio]);
 
+  const requestMicrophonePermission = async () => {
+    try {
+      // Request microphone access
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+      setPermission("granted");
+    } catch (error) {}
+  };
+
   return (
     <main className="px-8 flex flex-col w-full h-svh overflow-hidden">
       {permission === "denied" && <ModalPermissionDenied />}
+
       <div className="flex-shrink-0">
         <Navbar />
       </div>
@@ -729,70 +705,85 @@ const MainView = () => {
                 Stop Audio
               </Button>
             )}
-            <div
-              className={twMerge(
-                "relative w-16 h-16 flex  justify-center items-center cursor-pointer",
-                (isPlayingAudio || isLoading) &&
-                  "pointer-events-none opacity-50"
-              )}
-              onClick={isRecording ? stopRecording : startRecording}
-            >
-              <svg
-                className="absolute top-0 left-0 w-full h-full"
-                viewBox="0 0 36 36"
+            {permission === "granted" && (
+              <div
+                className={twMerge(
+                  "relative w-16 h-16 flex  justify-center items-center cursor-pointer",
+                  (isPlayingAudio || isLoading) &&
+                    "pointer-events-none opacity-50"
+                )}
+                // onClick={isRecording ? stopRecording : startRecording}
+                onMouseDown={startRecording} // Start recording on press
+                onMouseUp={stopRecording} // Stop recording on release
+                onMouseLeave={stopRecording} // Stop if the user drags out of the button
+                onTouchStart={startRecording} // For mobile: Start recording on touch
+                onTouchEnd={stopRecording}
               >
-                {/* Static White Border */}
-                <circle
-                  className="stroke-foreground/50"
-                  strokeWidth="1.5"
-                  fill="transparent"
-                  r={radius}
-                  cx="18"
-                  cy="18"
-                />
-                {/* Animated Stroke */}
-                {isRecording && (
+                <svg
+                  className="absolute top-0 left-0 w-full h-full"
+                  viewBox="0 0 36 36"
+                >
+                  {/* Static White Border */}
                   <circle
-                    className="stroke-red-500 -translate-y-1/2"
+                    className="stroke-foreground/50"
                     strokeWidth="1.5"
                     fill="transparent"
                     r={radius}
                     cx="18"
                     cy="18"
-                    strokeDasharray={circumference}
-                    strokeDashoffset={dashOffset}
-                    style={{
-                      transition: "stroke-dashoffset 1s linear", // Animate stroke
-                      transform: "rotate(-90deg)", // Rotate to start from the top
-                      transformOrigin: "50% 50%", // Set the rotation center
-                    }}
                   />
-                )}
-              </svg>
+                  {/* Animated Stroke */}
+                  {isRecording && (
+                    <circle
+                      className="stroke-red-500 -translate-y-1/2"
+                      strokeWidth="1.5"
+                      fill="transparent"
+                      r={radius}
+                      cx="18"
+                      cy="18"
+                      strokeDasharray={circumference}
+                      strokeDashoffset={dashOffset}
+                      style={{
+                        transition: "stroke-dashoffset 1s linear", // Animate stroke
+                        transform: "rotate(-90deg)", // Rotate to start from the top
+                        transformOrigin: "50% 50%", // Set the rotation center
+                      }}
+                    />
+                  )}
+                </svg>
 
-              <div
-                className={twMerge(
-                  "w-9 h-9 rounded-full bg-red-500 transition-all duration-300 ease-linear",
-                  isRecording && "w-6 h-6 rounded-sm bg-red-500"
-                )}
-              />
-            </div>
+                <div
+                  className={twMerge(
+                    "w-9 h-9 rounded-full bg-red-500 transition-all duration-300 ease-linear",
+                    isRecording && "w-6 h-6 rounded-sm bg-red-500"
+                  )}
+                />
+              </div>
+            )}
           </div>
 
-          <span className="hidden md:block text-xs">
-            {os === "undetermined" ? (
-              <Skeleton className="h-4 w-[80px]" />
-            ) : (
-              <span
-                className={twMerge(
-                  (isPlayingAudio || isLoading) &&
-                    "pointer-events-none opacity-50"
-                )}
-              >
-                Shift + Space
-              </span>
-            )}
-          </span>
+          {permission === "granted" && (
+            <span className="hidden md:block text-xs">
+              {os === "undetermined" ? (
+                <Skeleton className="h-4 w-[80px]" />
+              ) : (
+                <span
+                  className={twMerge(
+                    (isPlayingAudio || isLoading) &&
+                      "pointer-events-none opacity-50"
+                  )}
+                >
+                  Shift + Space
+                </span>
+              )}
+            </span>
+          )}
+
+          {permission === "prompt" && (
+            <Button onClick={requestMicrophonePermission}>
+              Activate Microphone
+            </Button>
+          )}
         </div>
 
         <div
@@ -820,10 +811,10 @@ const MainView = () => {
         </div>
 
         {permission === "granted" && (
-          <div className="absolute left-0 w-[300px] max-w-[300px] bottom-14 hidden lg:block">
+          <div className="absolute left-0 w-[300px] max-w-[300px] bottom-8 lg:bottom-14">
             <div
               className={twMerge(
-                "p-4 border border-border rounded-lg mb-2 -left-80 invisible transition-all duration-500 relative",
+                "p-4 border border-border rounded-lg mb-2 -left-80 invisible transition-all duration-500 relative bg-background",
                 isSettingVisible && "visible opacity-1 left-0"
               )}
             >
