@@ -712,12 +712,12 @@ const MainView = () => {
                   (isPlayingAudio || isLoading) &&
                     "pointer-events-none opacity-50"
                 )}
-                // onClick={isRecording ? stopRecording : startRecording}
-                onMouseDown={startRecording} // Start recording on press
-                onMouseUp={stopRecording} // Stop recording on release
-                onMouseLeave={stopRecording} // Stop if the user drags out of the button
-                onTouchStart={startRecording} // For mobile: Start recording on touch
-                onTouchEnd={stopRecording}
+                onClick={isRecording ? stopRecording : startRecording}
+                // onMouseDown={startRecording} // Start recording on press
+                // onMouseUp={stopRecording} // Stop recording on release
+                // onMouseLeave={stopRecording} // Stop if the user drags out of the button
+                // onTouchStart={startRecording} // For mobile: Start recording on touch
+                // onTouchEnd={stopRecording}
               >
                 <svg
                   className="absolute top-0 left-0 w-full h-full"
