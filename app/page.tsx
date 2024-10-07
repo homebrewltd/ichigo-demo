@@ -31,9 +31,8 @@ import { useLongPress } from "@uidotdev/usehooks";
 const audioVisualizerAtom = atomWithStorage("audioVisualizer", "old-straw");
 
 let spaceKeyHeld = false;
-let spaceKeyTimer: NodeJS.Timeout | undefined;
+let spaceKeyTimer: ReturnType<typeof setTimeout> | null = null; // Define the correct type for setTimeout
 let longPressTriggered = false;
-const longPressDuration = 400; // 10 se
 
 const audioVisualizerList = [
   {
@@ -82,7 +81,7 @@ const MainView = () => {
   const waveBars = useRef<HTMLDivElement[]>([]);
   const maxTime = 10;
   const [time, setTime] = useState(0);
-  const [isStopAudio, setIsStopAudio] = useState(false);
+
   const [permission, setPermission] = useState<PermissionState>(); // Microphone permission state
 
   const [selectedAudioVisualizer, setSelectedAudioVisualizer] =
@@ -240,12 +239,11 @@ const MainView = () => {
       setIsChatVisible(!isChatVisible);
     }
 
-    // Handle space key press
-    if (event.code === "Space" && !spaceKeyHeld && !isChatVisible) {
+    // // Handle space key press (start timer for long press)
+    if (event.code === "Space" && event.repeat && !spaceKeyHeld) {
       spaceKeyHeld = true;
-      longPressTriggered = true;
+      longPressTriggered = false; // Reset the long press trigger
 
-      // Start a timer for the long-press effect (10 seconds)
       spaceKeyTimer = setTimeout(() => {
         longPressTriggered = true; // Mark that a long press has been triggered
         if (!isLoading && !isPlayingAudio) {
@@ -255,20 +253,30 @@ const MainView = () => {
             startRecording();
           }
         }
-      }, longPressDuration);
+      }, 800);
     }
   });
 
   useWindowEvent("keyup", (event) => {
     if (event.code === "Space") {
-      spaceKeyHeld = false;
-      stopRecording();
-      clearTimeout(spaceKeyTimer); // Clear the timer when the space key is released
+      if (spaceKeyTimer !== null) {
+        clearTimeout(spaceKeyTimer);
+        spaceKeyTimer = null; // Reset the timer to null after clearing it
+      }
 
-      // If long press hasn't been triggered, treat it as a short press
+      spaceKeyHeld = false;
+      spaceKeyHeld = false;
+
+      // Do nothing if long press wasn't triggered
       if (!longPressTriggered) {
-        // Handle short press if needed, or just do nothing
-        return;
+        event.preventDefault();
+        event.stopPropagation();
+        stopRecording();
+        console.debug(
+          "Space key released before 10 seconds, no action triggered."
+        );
+      } else {
+        stopRecording();
       }
     }
   });
@@ -304,7 +312,6 @@ const MainView = () => {
     if (audioURL.current.length > 0 && audioURLIndex.current != -1) {
       console.debug("Playing: ", audioURLIndex.current);
       console.debug(audioURL.current[audioURLIndex.current], "Playing");
-
       const listener = new THREE.AudioListener();
       const audio = new THREE.Audio(listener);
       const audioLoader = new THREE.AudioLoader();
@@ -346,9 +353,7 @@ const MainView = () => {
               audioAnalyser.current = new THREE.AudioAnalyser(audio, 32);
               console.debug(audioAnalyser.current, "audioAnalyser.current");
               // Start playing the audio
-              if (!isStopAudio) {
-                audio.play();
-              }
+              audio.play();
               setIsPlayingAudio(true);
               // Delay the analysis to ensure the audio is playing
               setTimeout(() => {
@@ -365,11 +370,11 @@ const MainView = () => {
 
         onend: () => {
           console.debug("OneEnd: ", audioURL.current.length, audioURLIndex);
-          setIsPlayingAudio(false);
           if (audioURL.current.length > audioURLIndex.current + 1) {
             audioURLIndex.current = audioURLIndex.current + 1;
             playAudio();
           } else {
+            setIsPlayingAudio(false);
             audioURL.current = [];
             audioURLIndex.current = -1;
           }
@@ -403,7 +408,6 @@ const MainView = () => {
       const audioBlob = await response.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
       audioURL.current.push(audioUrl);
-
       console.debug("Pushing: ", audioURL.current.length, audioUrl);
 
       if (audioURLIndex.current === -1) {
@@ -425,7 +429,7 @@ const MainView = () => {
     checkpoint.current = 10;
     audioURL.current = [];
     audioURLIndex.current = -1;
-    setIsStopAudio(false);
+    // setIsStopAudio(false);
     handleSubmit(e);
   };
 
@@ -545,19 +549,6 @@ const MainView = () => {
       }, 500);
     }
   };
-
-  useEffect(() => {
-    if (isStopAudio) {
-      currentText.current = "";
-      currentCount.current = 0;
-      lastMsg.current = "";
-      checkpoint.current = 10;
-      audioURL.current = [];
-      audioURLIndex.current = -1;
-      stop();
-      setIsPlayingAudio(false);
-    }
-  }, [isStopAudio]);
 
   const requestMicrophonePermission = async () => {
     try {
@@ -715,7 +706,7 @@ const MainView = () => {
         <div className="flex flex-col justify-center items-center gap-4 ">
           <div
             className={twMerge(
-              "flex gap-3 justify-center items-end w-full p-4 rounded-lg absolute -top-20 h-20 invisible",
+              "flex gap-3 justify-center items-end w-full p-4 rounded-lg absolute -top-24 h-20 invisible",
               isRecording && "visible"
             )}
           >
@@ -739,7 +730,8 @@ const MainView = () => {
             {isPlayingAudio && (
               <Button
                 className="absolute -top-10 left-1/2 -translate-y-1/2 -translate-x-1/2"
-                onClick={() => setIsStopAudio(true)}
+                // onClick={() => setIsStopAudio(true)}
+                onClick={stop}
               >
                 Stop Audio
               </Button>
@@ -876,7 +868,7 @@ const MainView = () => {
                       "pointer-events-none opacity-50"
                   )}
                 >
-                  Press and Hold record button to talk
+                  Press and hold record button to talk
                 </span>
               )}
             </span>
