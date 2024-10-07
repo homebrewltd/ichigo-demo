@@ -32,6 +32,8 @@ const audioVisualizerAtom = atomWithStorage("audioVisualizer", "old-straw");
 
 let spaceKeyHeld = false;
 let spaceKeyTimer: NodeJS.Timeout | undefined;
+let longPressTriggered = false;
+const longPressDuration = 400; // 10 se
 
 const audioVisualizerList = [
   {
@@ -239,11 +241,13 @@ const MainView = () => {
     }
 
     // Handle space key press
-    if (event.code === "Space" && !spaceKeyHeld) {
+    if (event.code === "Space" && event.shiftKey && !spaceKeyHeld) {
       spaceKeyHeld = true;
+      longPressTriggered = true;
 
-      // Start a timer to handle the "hold" effect of the space key
+      // Start a timer for the long-press effect (10 seconds)
       spaceKeyTimer = setTimeout(() => {
+        longPressTriggered = true; // Mark that a long press has been triggered
         if (!isLoading && !isPlayingAudio) {
           if (isRecording) {
             stopRecording();
@@ -251,16 +255,21 @@ const MainView = () => {
             startRecording();
           }
         }
-      }, 400);
+      }, longPressDuration);
     }
   });
 
   useWindowEvent("keyup", (event) => {
-    console.log(event.code, spaceKeyHeld);
-    if (event.code === "Space" && spaceKeyHeld) {
+    if (event.code === "Space" && event.shiftKey) {
       spaceKeyHeld = false;
       stopRecording();
       clearTimeout(spaceKeyTimer); // Clear the timer when the space key is released
+
+      // If long press hasn't been triggered, treat it as a short press
+      if (!longPressTriggered) {
+        // Handle short press if needed, or just do nothing
+        return;
+      }
     }
   });
 
@@ -846,7 +855,7 @@ const MainView = () => {
                       "pointer-events-none opacity-50"
                   )}
                 >
-                  Hold space to talk to ichigo
+                  Hold shift + space to talk to ichigo
                 </span>
               )}
             </span>
