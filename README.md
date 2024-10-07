@@ -115,10 +115,3 @@ If you encounter any issues during the setup or running of the project, please c
 
 If problems persist, please open an issue in this repository with detailed information about the error you're experiencing.
 
-## Contributing
-
-[Add information about how others can contribute to your project]
-
-## License
-
-[Add your license information here]
