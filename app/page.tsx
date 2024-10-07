@@ -62,8 +62,10 @@ const MainView = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [frequency, setFrequency] = useState<number>(0);
-  const audioURL = useRef<string[]>([]);
+  const audioURL = useRef<{ [key: number]: any }>({});
   const audioURLIndex = useRef(-1);
+  const audioMapIndex = useRef(-1);
+  const currentWaitingIndex = useRef(-1);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const { load, stop } = useGlobalAudioPlayer();
@@ -309,7 +311,10 @@ const MainView = () => {
 
   // Play squance audio
   const playAudio = () => {
-    if (audioURL.current.length > 0 && audioURLIndex.current != -1) {
+    if (
+      audioURLIndex.current !== -1 &&
+      audioURL.current[audioURLIndex.current]
+    ) {
       console.debug("Playing: ", audioURLIndex.current);
       console.debug(audioURL.current[audioURLIndex.current], "Playing");
       const listener = new THREE.AudioListener();
@@ -319,18 +324,13 @@ const MainView = () => {
       const analyzeFrequency = () => {
         if (audioAnalyser.current) {
           const data = audioAnalyser.current.getFrequencyData();
-          console.debug("Frequency Data:", data);
 
           // Check if data contains non-zero values
           if (data.some((value) => value > 0)) {
             const averageFrequency =
               data.reduce((sum, value) => sum + value, 0) / data.length;
-            console.debug("Average Frequency:", averageFrequency);
             setFrequency(averageFrequency);
           } else {
-            console.debug(
-              "Frequency data is all zeros, indicating silence or no audio."
-            );
           }
 
           // Call analyzeFrequency again if the audio is still playing
@@ -369,14 +369,18 @@ const MainView = () => {
         },
 
         onend: () => {
-          console.debug("OneEnd: ", audioURL.current.length, audioURLIndex);
-          if (audioURL.current.length > audioURLIndex.current + 1) {
+          if (audioURL.current[audioURLIndex.current + 1]) {
             audioURLIndex.current = audioURLIndex.current + 1;
             playAudio();
+          } else if (audioURLIndex.current + 1 < audioMapIndex.current) {
+            // It's not ready yet
+            currentWaitingIndex.current = audioURLIndex.current + 1;
           } else {
             setIsPlayingAudio(false);
-            audioURL.current = [];
+            audioURL.current = {};
             audioURLIndex.current = -1;
+            audioMapIndex.current = -1;
+            currentWaitingIndex.current = -1;
           }
         },
       });
@@ -384,11 +388,13 @@ const MainView = () => {
   };
 
   const addToFetchQueue = (messageId: string, text: string) => {
-    queue.add(() => fetchTTS(messageId, text));
+    fetchTTS(messageId, text);
   };
 
   const fetchTTS = async (messageId: string, text: string) => {
     try {
+      const index = audioMapIndex.current + 1;
+      audioMapIndex.current += 1;
       const response = await fetch("/api/tts", {
         method: "POST",
         body: JSON.stringify({
@@ -405,12 +411,16 @@ const MainView = () => {
 
       const audioBlob = await response.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
-      audioURL.current.push(audioUrl);
-      console.debug("Pushing: ", audioURL.current.length, audioUrl);
+      audioURL.current[index] = audioUrl;
 
-      if (audioURLIndex.current === -1) {
-        console.debug("Set Audio Index: ", 0);
+      if (audioURLIndex.current === -1 && index === 0) {
         audioURLIndex.current = 0;
+        playAudio();
+      } else if (
+        currentWaitingIndex.current !== -1 &&
+        currentWaitingIndex.current === index
+      ) {
+        audioURLIndex.current += 1;
         playAudio();
       }
     } catch (error) {
@@ -425,8 +435,10 @@ const MainView = () => {
     currentCount.current = 0;
     lastMsg.current = "";
     checkpoint.current = 10;
-    audioURL.current = [];
+    audioURL.current = {};
     audioURLIndex.current = -1;
+    audioMapIndex.current = -1;
+    currentWaitingIndex.current = -1;
     // setIsStopAudio(false);
     handleSubmit(e);
   };
