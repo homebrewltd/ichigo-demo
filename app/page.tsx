@@ -715,7 +715,7 @@ const MainView = () => {
             {permission === "granted" && (
               <div
                 className={twMerge(
-                  "relative w-16 h-16 flex  justify-center items-center cursor-pointer",
+                  "relative w-16 h-16 flex  justify-center items-center cursor-pointer btn-custom",
                   (isPlayingAudio || isLoading) &&
                     "pointer-events-none opacity-50"
                 )}
