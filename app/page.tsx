@@ -873,8 +873,12 @@ const MainView = () => {
               )}
             </span>
           )}
-
           {permission === "prompt" && (
+            <Button onClick={requestMicrophonePermission}>
+              Activate Microphone
+            </Button>
+          )}
+          {permission === undefined && (
             <Button onClick={requestMicrophonePermission}>
               Activate Microphone
             </Button>
