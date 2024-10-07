@@ -120,7 +120,7 @@ const MainView = () => {
     keepLastMessageOnError: true,
     onFinish(message) {
       addToFetchQueue(message.id, currentText.current);
-      console.debug("send: ", currentText.current);
+      console.debug("send on Finish: ", currentText.current);
     },
   });
 
@@ -384,9 +384,7 @@ const MainView = () => {
   };
 
   const addToFetchQueue = (messageId: string, text: string) => {
-    queue.add(() => {
-      fetchTTS(messageId, text);
-    });
+    queue.add(() => fetchTTS(messageId, text));
   };
 
   const fetchTTS = async (messageId: string, text: string) => {
