@@ -241,7 +241,7 @@ const MainView = () => {
     }
 
     // Handle space key press
-    if (event.code === "Space" && event.shiftKey && !spaceKeyHeld) {
+    if (event.code === "Space" && !spaceKeyHeld && !isChatVisible) {
       spaceKeyHeld = true;
       longPressTriggered = true;
 
@@ -260,7 +260,7 @@ const MainView = () => {
   });
 
   useWindowEvent("keyup", (event) => {
-    if (event.code === "Space" && event.shiftKey) {
+    if (event.code === "Space") {
       spaceKeyHeld = false;
       stopRecording();
       clearTimeout(spaceKeyTimer); // Clear the timer when the space key is released
@@ -338,7 +338,7 @@ const MainView = () => {
         format: "wav",
         initialMute: true,
 
-        onplay: () => {
+        onload: () => {
           audioLoader.load(
             audioURL.current[audioURLIndex.current],
             (buffer) => {
@@ -346,7 +346,9 @@ const MainView = () => {
               audioAnalyser.current = new THREE.AudioAnalyser(audio, 32);
               console.debug(audioAnalyser.current, "audioAnalyser.current");
               // Start playing the audio
-              audio.play();
+              if (!isStopAudio) {
+                audio.play();
+              }
               setIsPlayingAudio(true);
               // Delay the analysis to ensure the audio is playing
               setTimeout(() => {
@@ -377,7 +379,9 @@ const MainView = () => {
   };
 
   const addToFetchQueue = (messageId: string, text: string) => {
-    queue.add(() => fetchTTS(messageId, text));
+    queue.add(() => {
+      fetchTTS(messageId, text);
+    });
   };
 
   const fetchTTS = async (messageId: string, text: string) => {
@@ -711,7 +715,7 @@ const MainView = () => {
         <div className="flex flex-col justify-center items-center gap-4 ">
           <div
             className={twMerge(
-              "flex gap-3 justify-center items-end w-full p-4 rounded-lg absolute -top-14 h-20 invisible",
+              "flex gap-3 justify-center items-end w-full p-4 rounded-lg absolute -top-20 h-20 invisible",
               isRecording && "visible"
             )}
           >
@@ -734,7 +738,7 @@ const MainView = () => {
           <div className="flex">
             {isPlayingAudio && (
               <Button
-                className="absolute top-0 left-1/2 -translate-y-1/2 -translate-x-1/2"
+                className="absolute -top-10 left-1/2 -translate-y-1/2 -translate-x-1/2"
                 onClick={() => setIsStopAudio(true)}
               >
                 Stop Audio
@@ -855,7 +859,24 @@ const MainView = () => {
                       "pointer-events-none opacity-50"
                   )}
                 >
-                  Hold shift + space to talk to ichigo
+                  Hold space to talk to ichigo
+                </span>
+              )}
+            </span>
+          )}
+
+          {permission === "granted" && (
+            <span className="block md:hidden text-xs mb-8">
+              {os === "undetermined" ? (
+                <Skeleton className="h-4 w-[80px]" />
+              ) : (
+                <span
+                  className={twMerge(
+                    (isPlayingAudio || isLoading) &&
+                      "pointer-events-none opacity-50"
+                  )}
+                >
+                  Press and Hold record button to talk
                 </span>
               )}
             </span>
