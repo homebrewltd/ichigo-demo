@@ -253,7 +253,7 @@ const MainView = () => {
             startRecording();
           }
         }
-      }, 800);
+      }, 300);
     }
   });
 
