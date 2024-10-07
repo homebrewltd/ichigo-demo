@@ -30,6 +30,9 @@ import OldStrawberryAnimation from "@/components/animations/oldStraberry";
 import { useLongPress } from "@uidotdev/usehooks";
 const audioVisualizerAtom = atomWithStorage("audioVisualizer", "old-straw");
 
+let spaceKeyHeld = false;
+let spaceKeyTimer: NodeJS.Timeout | undefined;
+
 const audioVisualizerList = [
   {
     id: "strawberry",
@@ -229,18 +232,35 @@ const MainView = () => {
   // Hotkey toogle chatbox and record audio
   useWindowEvent("keydown", (event) => {
     const prefix = isMac ? event.metaKey : event.ctrlKey;
+
+    // Toggle chat visibility with Ctrl/Command + B
     if (event.code === "KeyB" && prefix) {
       setIsChatVisible(!isChatVisible);
     }
 
-    if (event.code === "Space" && event.shiftKey) {
-      if (isLoading) return null;
-      if (isPlayingAudio) return null;
-      if (isRecording) {
-        stopRecording();
-      } else {
-        startRecording();
-      }
+    // Handle space key press
+    if (event.code === "Space" && !spaceKeyHeld) {
+      spaceKeyHeld = true;
+
+      // Start a timer to handle the "hold" effect of the space key
+      spaceKeyTimer = setTimeout(() => {
+        if (!isLoading && !isPlayingAudio) {
+          if (isRecording) {
+            stopRecording();
+          } else {
+            startRecording();
+          }
+        }
+      }, 400);
+    }
+  });
+
+  useWindowEvent("keyup", (event) => {
+    console.log(event.code, spaceKeyHeld);
+    if (event.code === "Space" && spaceKeyHeld) {
+      spaceKeyHeld = false;
+      stopRecording();
+      clearTimeout(spaceKeyTimer); // Clear the timer when the space key is released
     }
   });
 
@@ -535,7 +555,6 @@ const MainView = () => {
   };
 
   const longPressHandlers = useLongPress(startRecording, {
-    // onStart: (event) => console.log("Press started"),
     onFinish: stopRecording,
     // onCancel: (event) => console.log("Press cancelled"),
     threshold: 500,
@@ -712,15 +731,66 @@ const MainView = () => {
                 Stop Audio
               </Button>
             )}
+            {/* Mobile */}
             {permission === "granted" && (
               <div
                 className={twMerge(
-                  "relative w-16 h-16 flex  justify-center items-center cursor-pointer btn-custom",
+                  "relative w-16 h-16 justify-center items-center cursor-pointer btn-custom flex lg:hidden",
                   (isPlayingAudio || isLoading) &&
                     "pointer-events-none opacity-50"
                 )}
-                // onClick={isRecording ? stopRecording : startRecording}
                 {...longPressHandlers}
+              >
+                <svg
+                  className="absolute top-0 left-0 w-full h-full"
+                  viewBox="0 0 36 36"
+                >
+                  {/* Static White Border */}
+                  <circle
+                    className="stroke-foreground/50"
+                    strokeWidth="1.5"
+                    fill="transparent"
+                    r={radius}
+                    cx="18"
+                    cy="18"
+                  />
+                  {/* Animated Stroke */}
+                  {isRecording && (
+                    <circle
+                      className="stroke-red-500 -translate-y-1/2"
+                      strokeWidth="1.5"
+                      fill="transparent"
+                      r={radius}
+                      cx="18"
+                      cy="18"
+                      strokeDasharray={circumference}
+                      strokeDashoffset={dashOffset}
+                      style={{
+                        transition: "stroke-dashoffset 1s linear", // Animate stroke
+                        transform: "rotate(-90deg)", // Rotate to start from the top
+                        transformOrigin: "50% 50%", // Set the rotation center
+                      }}
+                    />
+                  )}
+                </svg>
+
+                <div
+                  className={twMerge(
+                    "w-9 h-9 rounded-full bg-red-500 transition-all duration-300 ease-linear",
+                    isRecording && "w-6 h-6 rounded-sm bg-red-500"
+                  )}
+                />
+              </div>
+            )}
+            {/* Desktop */}
+            {permission === "granted" && (
+              <div
+                className={twMerge(
+                  "relative w-16 h-16 justify-center items-center cursor-pointer btn-custom hidden lg:flex",
+                  (isPlayingAudio || isLoading) &&
+                    "pointer-events-none opacity-50"
+                )}
+                onClick={isRecording ? stopRecording : startRecording}
               >
                 <svg
                   className="absolute top-0 left-0 w-full h-full"
@@ -776,7 +846,7 @@ const MainView = () => {
                       "pointer-events-none opacity-50"
                   )}
                 >
-                  Shift + Space
+                  Hold space to talk to ichigo
                 </span>
               )}
             </span>
