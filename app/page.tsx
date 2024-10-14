@@ -123,6 +123,7 @@ const MainView = () => {
     onFinish(message) {
       addToFetchQueue(message.id, currentText.current);
       console.debug("send on Finish: ", currentText.current);
+
     },
   });
 
@@ -387,8 +388,10 @@ const MainView = () => {
     }
   };
 
+
   const addToFetchQueue = (messageId: string, text: string) => {
     fetchTTS(messageId, text);
+
   };
 
   const fetchTTS = async (messageId: string, text: string) => {
@@ -414,6 +417,7 @@ const MainView = () => {
       audioURL.current[index] = audioUrl;
 
       if (audioURLIndex.current === -1 && index === 0) {
+
         audioURLIndex.current = 0;
         playAudio();
       } else if (

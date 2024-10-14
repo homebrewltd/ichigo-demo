@@ -1,43 +1,117 @@
-# AI SDK, Next.js, and OpenAI Chat Example
+# Ichigo-demo
 
-This example shows how to use the [AI SDK](https://sdk.vercel.ai/docs) with [Next.js](https://nextjs.org/) and [OpenAI](https://openai.com) to create a ChatGPT-like AI-powered streaming chat bot.
+This project consists of a frontend application and a backend setup using Docker.
 
-## Deploy your own
+## Prerequisites
 
-Deploy the example using [Vercel](https://vercel.com?utm_source=github&utm_medium=readme&utm_campaign=ai-sdk-example):
+Before you begin, ensure you have the following installed on your machine:
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fai%2Ftree%2Fmain%2Fexamples%2Fnext-openai&env=OPENAI_API_KEY&project-name=ai-sdk-next-openai&repository-name=ai-sdk-next-openai)
+- Docker
+- Docker Compose
+- NVIDIA Container Toolkit
+- Node.js (version 18 or higher)
 
-## How to use
+## Installation
 
-Execute [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app) with [npm](https://docs.npmjs.com/cli/init), [Yarn](https://yarnpkg.com/lang/en/docs/cli/create/), or [pnpm](https://pnpm.io) to bootstrap the example:
+### Frontend Setup
 
-```bash
-npx create-next-app --example https://github.com/vercel/ai/tree/main/examples/next-openai next-openai-app
+1. Navigate to the root project directory:
+   ```
+   cd /path/to/project
+   ```
+
+2. Install dependencies:
+   ```
+   npm install
+   ```
+3. Update the `.env.local` file with the following configurations:
+   ```
+   OPENAI_BASE_URL=http://localhost:5000/v1/
+   TOKENIZE_BASE_URL=http://localhost:3348
+   TTS_BASE_URL=http://localhost:22311/v1/
+   ```
+4. Build the project:
+   ```
+   npm run build
+   ```
+
+5. Start the frontend:
+   ```
+   npm start
+   ```
+
+
+
+### Backend Setup
+
+1. Navigate to the Docker folder:
+   ```
+   cd docker
+   ```
+
+2. Build the Docker containers:
+   ```
+   docker-compose build
+   ```
+
+3. Download the latest Llama3s model in ExLlama2 format from:
+   [Llama3-s-instruct-v0.3-checkpoint-7000-phase-3-exllama2](https://huggingface.co/janhq/llama3-s-instruct-v0.3-checkpoint-7000-phase-3-exllama2)
+
+4. Edit the `docker/tabbyapi/config.yml` file:
+   - Update the `model_name:` field with the folder path containing the Llama3s ExLlama2 model.
+
+5. Update the Docker Compose configuration:
+   In your `docker-compose.yml` file, ensure the `tabbyapi` service has the following configuration:
+
+   ```yaml
+   tabbyapi:
+     container_name: tabbyapi
+     build:
+       context: ./tabbyAPI-personal-fork
+       dockerfile: ./docker/Dockerfile
+       args:
+         DO_PULL: "true"
+     ports:
+       - "5000:5000"
+     environment:
+       NAME: TabbyAPI
+       NVIDIA_VISIBLE_DEVICES: all
+     volumes:
+       - /path/to/parent/directory/of/llama3s/:/app/models
+       - ./tabbyapi/config.yml:/app/config.yml
+     deploy:
+       resources:
+         reservations:
+           devices:
+             - driver: nvidia
+               count: all
+               capabilities: [ gpu ]
+   ```
+
+   Make sure to replace `/path/to/parent/directory/of/llama3s/` with the actual path to the parent directory containing your Llama3s model.
+
+6. Start the Docker containers:
+   ```
+   docker-compose up
+   ```
+
+## Usage
+
+Once everything is set up and running, you can access the demo page by opening your browser and navigating to:
+
+```
+http://localhost:3000
 ```
 
-```bash
-yarn create next-app --example https://github.com/vercel/ai/tree/main/examples/next-openai next-openai-app
-```
+## Troubleshooting
 
-```bash
-pnpm create next-app --example https://github.com/vercel/ai/tree/main/examples/next-openai next-openai-app
-```
+If you encounter any issues during the setup or running of the project, please check the following:
 
-To run the example locally you need to:
+1. Ensure all prerequisites are correctly installed.
+2. Verify that all paths in the configuration files are correct.
+3. Check the console output for any error messages.
+4. Make sure the Llama3s model is in the correct location and properly mounted in the Docker container.
+5. Verify that your GPU is properly set up and recognized by Docker.
 
-1. Sign up at [OpenAI's Developer Platform](https://platform.openai.com/signup).
-2. Go to [OpenAI's dashboard](https://platform.openai.com/account/api-keys) and create an API KEY.
-3. If you choose to use external files for attachments, then create a [Vercel Blob Store](https://vercel.com/docs/storage/vercel-blob).
-4. Set the required environment variable as the token value as shown [the example env file](./.env.local.example) but in a new file called `.env.local`
-5. `pnpm install` to install the required dependencies.
-6. `pnpm dev` to launch the development server.
+If problems persist, please open an issue in this repository with detailed information about the error you're experiencing.
 
-## Learn More
-
-To learn more about OpenAI, Next.js, and the AI SDK take a look at the following resources:
-
-- [AI SDK docs](https://sdk.vercel.ai/docs)
-- [Vercel AI Playground](https://play.vercel.ai)
-- [OpenAI Documentation](https://platform.openai.com/docs) - learn about OpenAI features and API.
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
