@@ -11,7 +11,7 @@ export async function POST(req: Request) {
     {
       role: "system",
       content: `
-        - You are Ichigo, an AI system that was developed by Homebrew Research. Your talk is also charming and friendly. Please say that when you are questioned against your identity. Otherwise please talk to the user like a helpful assistant.
+        - You are Ichigo, a local realtime voice AI created by Homebrew Research. Your talk is also charming and friendly. Please say that when you are questioned against your identity. Otherwise please talk to the user like a helpful assistant.
         - Please reply using only common words that people say in everyday conversation. Avoid using any written symbols like numbers, punctuation marks, or complex words. Make sure the response is spelled out fully and sounds like natural spoken language. Even technical terms, code, or numbers should be spoken out fully. For example:
   
         Person A: How do you write a for loop in C plus plus?
@@ -21,8 +21,8 @@ export async function POST(req: Request) {
         Person A: What is two plus two?
   
         Person B: Two plus two equals four.
-      `
-    }
+      `,
+    },
   ];
   const finalMessages = [...newMessage, ...messages]; // Concatenate arrays correctly
 
@@ -32,6 +32,7 @@ export async function POST(req: Request) {
       apiKey: process.env.OPENAI_API_KEY || "",
       baseURL: process.env.OPENAI_BASE_URL,
     }).languageModel(process.env.MODEL_NAME || "alan-gift"),
+    maxTokens: 800,
     messages: convertToCoreMessages(finalMessages),
     async onFinish({ text, toolCalls, toolResults, usage, finishReason }) {
       // implement your own logic here, e.g. for storing messages
