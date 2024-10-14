@@ -24,23 +24,23 @@ Before you begin, ensure you have the following installed on your machine:
    ```
    npm install
    ```
-
-3. Build the project:
-   ```
-   npm run build
-   ```
-
-4. Start the frontend:
-   ```
-   npm start
-   ```
-
-5. Update the `.env.local` file with the following configurations:
+3. Update the `.env.local` file with the following configurations:
    ```
    OPENAI_BASE_URL=http://localhost:5000/v1/
    TOKENIZE_BASE_URL=http://localhost:3348
    TTS_BASE_URL=http://localhost:22311/v1/
    ```
+4. Build the project:
+   ```
+   npm run build
+   ```
+
+5. Start the frontend:
+   ```
+   npm start
+   ```
+
+
 
 ### Backend Setup
 
