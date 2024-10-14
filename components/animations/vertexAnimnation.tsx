@@ -4,8 +4,7 @@ import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
 import { useRef, useMemo } from "react";
-import { GUI } from "dat.gui";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Vector2 } from "three";
 
 // Extend effect composer and passes to use in fiber
@@ -51,14 +50,6 @@ const ShaderMaterial = ({
       (
         meshRef.current.material as THREE.ShaderMaterial
       ).uniforms.u_frequency.value = u_frequency;
-
-      // if (
-      //   (meshRef.current.material as THREE.ShaderMaterial).uniforms.u_frequency
-      //     .value !== u_frequency
-      // ) {
-      //   meshRef.current.rotation.x += u_frequency * 0.01;
-      //   meshRef.current.rotation.y += u_frequency * 0.01;
-      // }
     }
   });
 
@@ -219,23 +210,23 @@ const Effects = () => {
   return null;
 };
 
-interface AppProps {
+interface VertexAnimationProps {
   frequency: number;
 }
 
-const App = ({ frequency }: AppProps) => {
+const VertexAnimation = ({ frequency }: VertexAnimationProps) => {
   return (
-    <Canvas camera={{ position: [0, -2, 10] }} gl={{ alpha: true }}>
+    <Canvas camera={{ position: [0, -2, 12] }} gl={{ alpha: true }}>
       <ShaderMaterial
         u_frequency={frequency}
         u_red={0.36}
         u_green={0.36}
         u_blue={0.36}
       />
-
       <Effects />
+      {/* <ResizeHandler /> */}
     </Canvas>
   );
 };
 
-export default App;
+export default VertexAnimation;
